@@ -57,7 +57,7 @@
         );
     }
 
-    /* Initial welcome screen */
+    /* Welcome screen */
 
     #welcome-screen {
       position: fixed;
@@ -114,7 +114,7 @@
       transform: translateY(-2px);
     }
 
-    /* Main layout */
+    /* Main page */
 
     .page {
       position: relative;
@@ -206,7 +206,7 @@
       border: 0;
     }
 
-    /* Fullscreen player */
+    /* Fullscreen landscape player */
 
     #player-box:fullscreen {
       display: flex;
@@ -218,7 +218,7 @@
       margin: 0;
       border: 0;
       border-radius: 0;
-      box-shadow: none;
+      background: #000;
     }
 
     #player-box:fullscreen iframe {
@@ -235,6 +235,7 @@
       margin: 0;
       border: 0;
       border-radius: 0;
+      background: #000;
     }
 
     #player-box:-webkit-full-screen iframe {
@@ -369,10 +370,10 @@
 </head>
 
 <body>
-  <!-- This screen only enables playback permissions. It does not start a video. -->
+  <!-- Enter only enables video playback. It does not start a video. -->
   <div id="welcome-screen">
     <h1>NKT Movies</h1>
-    <button id="enter-button" type="button">Let me in</button>
+    <button id="enter-button" type="button">Enter</button>
   </div>
 
   <div class="page">
@@ -399,13 +400,6 @@
   <script>
     /*
       Add your YouTube videos here.
-
-      Supported formats:
-
-      https://www.youtube.com/watch?v=VIDEO_ID
-      https://youtu.be/VIDEO_ID
-      https://www.youtube.com/shorts/VIDEO_ID
-      https://www.youtube.com/embed/VIDEO_ID
     */
 
     const videos = [
@@ -545,8 +539,10 @@
         "?autoplay=1&rel=0&playsinline=1";
 
       iframe.title = title;
+
       iframe.allow =
         "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+
       iframe.allowFullscreen = true;
 
       playerBox.appendChild(iframe);
@@ -556,29 +552,40 @@
       nowPlaying.classList.add("visible");
 
       /*
-        This is called from the user's video-button click.
-        That allows the browser to authorize fullscreen mode.
+        The user clicked the video button.
+        This allows the browser to enter fullscreen.
       */
       requestPlayerFullscreen();
     }
 
-    function requestPlayerFullscreen() {
+    async function requestPlayerFullscreen() {
       const requestFullscreen =
         playerBox.requestFullscreen ||
         playerBox.webkitRequestFullscreen ||
         playerBox.mozRequestFullScreen ||
-        playerBox.msRequestFullscreen;
+        playerBox.msRequestFullScreen;
 
       if (!requestFullscreen) {
         return;
       }
 
-      const result = requestFullscreen.call(playerBox);
+      try {
+        await requestFullscreen.call(playerBox);
 
-      if (result && typeof result.catch === "function") {
-        result.catch(() => {
-          // Fullscreen was blocked or is not supported.
-        });
+        /*
+          Lock the phone to landscape mode.
+          This works on supported mobile browsers.
+        */
+        if (
+          screen.orientation &&
+          screen.orientation.lock
+        ) {
+          await screen.orientation.lock("landscape");
+        }
+      } catch (error) {
+        console.log(
+          "Fullscreen or landscape mode is not supported by this browser."
+        );
       }
     }
 
@@ -598,11 +605,22 @@
       document
         .getElementById("fs-bar")
         .classList.toggle("hidden", Boolean(isFullscreen));
+
+      /*
+        Unlock the screen when the user exits fullscreen.
+        This is supported only on some browsers.
+      */
+      if (
+        !isFullscreen &&
+        screen.orientation &&
+        screen.orientation.unlock
+      ) {
+        screen.orientation.unlock();
+      }
     }
 
     /*
-      Enter only enables autoplay and opens the movie list.
-      It does not select or play any video.
+      Enter enables autoplay but does not play anything.
     */
     enterButton.addEventListener("click", () => {
       autoplayEnabled = true;
