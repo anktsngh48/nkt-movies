@@ -257,6 +257,36 @@
       display: block;
     }
 
+    /* Search box */
+
+    .search-box {
+      margin-bottom: 20px;
+    }
+
+    #search-input {
+      width: 100%;
+      padding: 13px 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      background: var(--card);
+      color: var(--text);
+      font-family: "Sora", sans-serif;
+      font-size: 0.78rem;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    #search-input::placeholder {
+      color: var(--muted);
+    }
+
+    #search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.16);
+    }
+
     .section-title {
       margin: 0 0 12px;
       color: var(--text);
@@ -403,6 +433,16 @@
 
       <div id="now-playing"></div>
 
+      <!-- Search checks title, description and hidden tags -->
+      <div class="search-box">
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Search by title, description or tags..."
+          aria-label="Search videos"
+        />
+      </div>
+
       <h2 class="section-title">Available Videos</h2>
 
       <div id="video-list"></div>
@@ -414,27 +454,36 @@
       Add your YouTube videos here.
 
       The description is optional.
-      If you do not want a description, remove the description line.
+
+      Tags are also optional and are used only for searching.
+      Tags must be comma-separated, for example:
+      "Shahrukh, coal, 2012"
+
+      Tags are not displayed anywhere in the user interface.
     */
 
     const videos = [
       {
         title: "Welcome Video",
         description: "Introduction video",
+        tags: "Shahrukh, coal, 2012",
         youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       },
       {
         title: "Tutorial",
         description: "Step-by-step tutorial",
+        tags: "tutorial, guide, learning",
         youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_2"
       },
       {
         title: "Event Highlights",
         description: "Highlights from the event",
+        tags: "event, highlights, celebration",
         youtubeUrl: "https://youtu.be/VIDEO_ID_3"
       },
       {
         title: "Video Without Description",
+        tags: "movies, entertainment",
         youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_4"
       }
     ];
@@ -444,6 +493,7 @@
     const videoList = document.getElementById("video-list");
     const playerBox = document.getElementById("player-box");
     const nowPlaying = document.getElementById("now-playing");
+    const searchInput = document.getElementById("search-input");
 
     let autoplayEnabled = false;
 
@@ -487,17 +537,34 @@
     function renderVideos() {
       videoList.innerHTML = "";
 
+      const searchTerm = searchInput.value.trim().toLowerCase();
+
       const validVideos = videos
         .map((video) => ({
           ...video,
           videoId: getYouTubeVideoId(video.youtubeUrl)
         }))
-        .filter((video) => video.videoId);
+        .filter((video) => video.videoId)
+        .filter((video) => {
+          const searchableText = [
+            video.title || "",
+            video.description || "",
+            video.tags || ""
+          ]
+            .join(" ")
+            .toLowerCase();
+
+          return searchableText.includes(searchTerm);
+        });
 
       if (validVideos.length === 0) {
         videoList.innerHTML = `
           <div class="empty-message">
-            No valid YouTube videos found.
+            ${
+              searchTerm
+                ? "No videos match your search."
+                : "No valid YouTube videos found."
+            }
           </div>
         `;
         return;
@@ -663,6 +730,12 @@
       autoplayEnabled = true;
       welcomeScreen.classList.add("hidden");
     });
+
+    /*
+      Re-render the videos whenever the search text changes.
+      Searches title, description and tags.
+    */
+    searchInput.addEventListener("input", renderVideos);
 
     [
       "fullscreenchange",
