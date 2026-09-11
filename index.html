@@ -6,6 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
+
   <title>NKT Movies</title>
 
   <style>
@@ -111,7 +112,7 @@
       transform: translateY(-2px);
     }
 
-    /* Main website */
+    /* Main page */
     .page {
       position: relative;
       z-index: 1;
@@ -120,12 +121,13 @@
       min-height: 100vh;
       margin: 0 auto;
       padding-bottom: 40px;
-      background: transparent;
+      background: var(--bg);
     }
 
     /*
-      When the whole website is fullscreen, do not change orientation.
-      The website uses the browser's current portrait/landscape mode.
+      Website fullscreen:
+      The page fills the screen but keeps the device's current
+      portrait or landscape orientation.
     */
     .page:fullscreen,
     .page:-webkit-full-screen {
@@ -136,8 +138,9 @@
       background: var(--bg);
     }
 
-    /* Fullscreen website bar */
+    /* Fullscreen website button */
     #fs-bar {
+      display: block;
       width: 100%;
       padding: 10px 20px;
       border: 0;
@@ -155,7 +158,7 @@
     }
 
     #fs-bar:hover {
-      background: rgba(0, 229, 255, 0.13);
+      background: rgba(0, 229, 255, 0.14);
     }
 
     #fs-bar.hidden {
@@ -194,8 +197,8 @@
     }
 
     /*
-      The video area always remains landscape.
-      This applies in both portrait and landscape browser modes.
+      Normal video player is always landscape, including on phones
+      held in portrait mode.
     */
     #player-box {
       display: none;
@@ -223,8 +226,8 @@
     }
 
     /*
-      If only the video player enters fullscreen,
-      it still stays landscape-shaped without locking device orientation.
+      Video fullscreen:
+      The video requests landscape orientation.
     */
     #player-box:fullscreen,
     #player-box:-webkit-full-screen {
@@ -418,7 +421,7 @@
   </div>
 
   <div class="page" id="website-page">
-    <!-- This button fullscreen the entire website -->
+    <!-- Fullscreens the whole website without changing orientation -->
     <button id="fs-bar" type="button">
       Tap here for fullscreen mode
     </button>
@@ -450,7 +453,6 @@
   <script>
     /*
       Add your YouTube videos here.
-      Tags are used only for searching.
     */
     const videos = [
       {
@@ -636,9 +638,8 @@
       nowPlaying.classList.add("visible");
 
       /*
-        The video remains a landscape 16:9 player.
-        No screen.orientation.lock() is used, so the device remains
-        in its current portrait or landscape mode.
+        The video is opened fullscreen and requests landscape.
+        This is separate from the website fullscreen button.
       */
       requestVideoFullscreen();
     }
@@ -655,22 +656,37 @@
       }
 
       try {
+        /*
+          This call occurs after the user's video-button click.
+        */
         await requestFullscreen.call(playerBox);
+
+        /*
+          Only the video fullscreen view requests landscape.
+          The website fullscreen button does not call this function.
+        */
+        if (
+          screen.orientation &&
+          typeof screen.orientation.lock === "function"
+        ) {
+          try {
+            await screen.orientation.lock("landscape");
+          } catch (orientationError) {
+            console.log(
+              "Landscape orientation is not supported by this browser."
+            );
+          }
+        }
       } catch (error) {
         console.log("Video fullscreen was not allowed by this browser.");
       }
     }
 
     /*
-      Fullscreen the entire website.
-      This does not lock or change the screen orientation.
+      Fullscreen the entire website without changing orientation.
     */
     async function enterWebsiteFullscreen() {
-      const fullscreenElement =
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement;
+      const fullscreenElement = getFullscreenElement();
 
       if (fullscreenElement) {
         await exitFullscreen();
@@ -689,6 +705,10 @@
       }
 
       try {
+        /*
+          No orientation lock is used here.
+          Portrait remains portrait and landscape remains landscape.
+        */
         await requestFullscreen.call(websitePage);
       } catch (error) {
         console.log("Website fullscreen was not allowed by this browser.");
@@ -711,18 +731,32 @@
       return (
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
+        document.mozFullscreenElement ||
         document.msFullscreenElement
       );
     }
 
     function handleFullscreenChange() {
-      const isFullscreen = Boolean(getFullscreenElement());
+      const fullscreenElement = getFullscreenElement();
+      const isFullscreen = Boolean(fullscreenElement);
+
+      fullscreenBar.classList.toggle("hidden", isFullscreen);
 
       /*
-        Hide the website fullscreen bar while any element is fullscreen.
+        Unlock the device after leaving video fullscreen.
+        This allows the device to return to its normal behavior.
       */
-      fullscreenBar.classList.toggle("hidden", isFullscreen);
+      if (
+        !isFullscreen &&
+        screen.orientation &&
+        typeof screen.orientation.unlock === "function"
+      ) {
+        try {
+          screen.orientation.unlock();
+        } catch (error) {
+          console.log("Orientation unlock is not supported.");
+        }
+      }
     }
 
     enterButton.addEventListener("click", () => {
@@ -730,7 +764,10 @@
       welcomeScreen.classList.add("hidden");
     });
 
-    fullscreenBar.addEventListener("click", enterWebsiteFullscreen);
+    fullscreenBar.addEventListener(
+      "click",
+      enterWebsiteFullscreen
+    );
 
     searchInput.addEventListener("input", renderVideos);
 
