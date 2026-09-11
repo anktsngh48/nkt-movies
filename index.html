@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <title>NKT Movies</title>
 
   <style>
@@ -108,7 +111,7 @@
       transform: translateY(-2px);
     }
 
-    /* Main page */
+    /* Main website */
     .page {
       position: relative;
       z-index: 1;
@@ -117,16 +120,26 @@
       min-height: 100vh;
       margin: 0 auto;
       padding-bottom: 40px;
+      background: transparent;
     }
 
     /*
-      Fullscreen button.
-      This is a real button so it works with keyboard and touch input.
+      When the whole website is fullscreen, do not change orientation.
+      The website uses the browser's current portrait/landscape mode.
     */
+    .page:fullscreen,
+    .page:-webkit-full-screen {
+      width: 100vw;
+      max-width: none;
+      min-height: 100vh;
+      overflow-y: auto;
+      background: var(--bg);
+    }
+
+    /* Fullscreen website bar */
     #fs-bar {
-      display: block;
       width: 100%;
-      padding: 8px 20px;
+      padding: 10px 20px;
       border: 0;
       border-bottom: 1px solid rgba(0, 229, 255, 0.09);
       background: rgba(0, 229, 255, 0.035);
@@ -142,33 +155,11 @@
     }
 
     #fs-bar:hover {
-      background: rgba(0, 229, 255, 0.12);
+      background: rgba(0, 229, 255, 0.13);
     }
 
     #fs-bar.hidden {
       display: none;
-    }
-
-    /*
-      Make the entire website fill the display when fullscreen is active.
-    */
-    html:fullscreen,
-    html:-webkit-full-screen {
-      width: 100%;
-      min-height: 100%;
-      background: var(--bg);
-    }
-
-    html:fullscreen body,
-    html:-webkit-full-screen body {
-      width: 100%;
-      min-height: 100vh;
-    }
-
-    html:fullscreen .page,
-    html:-webkit-full-screen .page {
-      max-width: none;
-      min-height: 100vh;
     }
 
     header {
@@ -202,6 +193,10 @@
       padding: 24px 16px;
     }
 
+    /*
+      The video area always remains landscape.
+      This applies in both portrait and landscape browser modes.
+    */
     #player-box {
       display: none;
       width: 100%;
@@ -227,8 +222,12 @@
       border: 0;
     }
 
-    /* Optional fullscreen mode for the video player itself */
-    #player-box:fullscreen {
+    /*
+      If only the video player enters fullscreen,
+      it still stays landscape-shaped without locking device orientation.
+    */
+    #player-box:fullscreen,
+    #player-box:-webkit-full-screen {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -241,26 +240,12 @@
       background: #000;
     }
 
-    #player-box:fullscreen iframe {
-      width: 100vw;
-      height: 100vh;
-    }
-
-    #player-box:-webkit-full-screen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100vw;
-      height: 100vh;
-      margin: 0;
-      border: 0;
-      border-radius: 0;
-      background: #000;
-    }
-
+    #player-box:fullscreen iframe,
     #player-box:-webkit-full-screen iframe {
       width: 100vw;
-      height: 100vh;
+      height: 56.25vw;
+      max-height: 100vh;
+      border: 0;
     }
 
     #now-playing {
@@ -277,7 +262,7 @@
       display: block;
     }
 
-    /* Search box */
+    /* Search */
     .search-box {
       margin-bottom: 20px;
     }
@@ -426,14 +411,14 @@
 </head>
 
 <body>
-  <!-- The welcome screen enables video playback. It does not start a video. -->
+  <!-- Enter enables video playback but does not start a video -->
   <div id="welcome-screen">
     <h1>NKT Movies</h1>
     <button id="enter-button" type="button">Let me in</button>
   </div>
 
-  <div class="page">
-    <!-- This button now enters fullscreen even before a movie is selected. -->
+  <div class="page" id="website-page">
+    <!-- This button fullscreen the entire website -->
     <button id="fs-bar" type="button">
       Tap here for fullscreen mode
     </button>
@@ -465,12 +450,7 @@
   <script>
     /*
       Add your YouTube videos here.
-
-      Supported URL formats:
-      - https://www.youtube.com/watch?v=VIDEO_ID
-      - https://youtu.be/VIDEO_ID
-      - https://www.youtube.com/shorts/VIDEO_ID
-      - https://www.youtube.com/embed/VIDEO_ID
+      Tags are used only for searching.
     */
     const videos = [
       {
@@ -493,7 +473,6 @@
       },
       {
         title: "Video Without Description",
-        description: "",
         tags: "movies, entertainment",
         youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_4"
       }
@@ -501,6 +480,7 @@
 
     const welcomeScreen = document.getElementById("welcome-screen");
     const enterButton = document.getElementById("enter-button");
+    const websitePage = document.getElementById("website-page");
     const fullscreenBar = document.getElementById("fs-bar");
     const videoList = document.getElementById("video-list");
     const playerBox = document.getElementById("player-box");
@@ -582,12 +562,11 @@
         return;
       }
 
-      validVideos.forEach((video, index) => {
+      validVideos.forEach((video) => {
         const item = document.createElement("button");
 
         item.className = "video-item";
         item.type = "button";
-        item.dataset.index = index;
 
         item.innerHTML = `
           <div class="video-info">
@@ -614,14 +593,14 @@
         }
 
         item.addEventListener("click", () => {
-          playVideo(video.videoId, video.title, index);
+          playVideo(video.videoId, video.title, item);
         });
 
         videoList.appendChild(item);
       });
     }
 
-    function playVideo(videoId, title, index) {
+    function playVideo(videoId, title, selectedItem) {
       if (!autoplayEnabled) {
         return;
       }
@@ -630,13 +609,7 @@
         item.classList.remove("playing");
       });
 
-      const selectedItem = document.querySelector(
-        `.video-item[data-index="${index}"]`
-      );
-
-      if (selectedItem) {
-        selectedItem.classList.add("playing");
-      }
+      selectedItem.classList.add("playing");
 
       playerBox.innerHTML = "";
 
@@ -661,22 +634,54 @@
         "▶ NOW PLAYING: " + (title || "Untitled video");
 
       nowPlaying.classList.add("visible");
+
+      /*
+        The video remains a landscape 16:9 player.
+        No screen.orientation.lock() is used, so the device remains
+        in its current portrait or landscape mode.
+      */
+      requestVideoFullscreen();
+    }
+
+    async function requestVideoFullscreen() {
+      const requestFullscreen =
+        playerBox.requestFullscreen ||
+        playerBox.webkitRequestFullscreen ||
+        playerBox.mozRequestFullScreen ||
+        playerBox.msRequestFullscreen;
+
+      if (!requestFullscreen) {
+        return;
+      }
+
+      try {
+        await requestFullscreen.call(playerBox);
+      } catch (error) {
+        console.log("Video fullscreen was not allowed by this browser.");
+      }
     }
 
     /*
-      Enters fullscreen for the entire website.
-
-      This is called directly from the fullscreen button's click event,
-      which is required by modern browsers.
+      Fullscreen the entire website.
+      This does not lock or change the screen orientation.
     */
-    async function enterFullscreen() {
-      const page = document.documentElement;
+    async function enterWebsiteFullscreen() {
+      const fullscreenElement =
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
+
+      if (fullscreenElement) {
+        await exitFullscreen();
+        return;
+      }
 
       const requestFullscreen =
-        page.requestFullscreen ||
-        page.webkitRequestFullscreen ||
-        page.mozRequestFullScreen ||
-        page.msRequestFullscreen;
+        websitePage.requestFullscreen ||
+        websitePage.webkitRequestFullscreen ||
+        websitePage.mozRequestFullScreen ||
+        websitePage.msRequestFullscreen;
 
       if (!requestFullscreen) {
         alert("Fullscreen mode is not supported by this browser.");
@@ -684,59 +689,48 @@
       }
 
       try {
-        await requestFullscreen.call(page);
-
-        if (
-          screen.orientation &&
-          screen.orientation.lock
-        ) {
-          try {
-            await screen.orientation.lock("landscape");
-          } catch {
-            // Some browsers do not allow orientation locking.
-          }
-        }
+        await requestFullscreen.call(websitePage);
       } catch (error) {
-        console.error("Unable to enter fullscreen mode:", error);
+        console.log("Website fullscreen was not allowed by this browser.");
       }
     }
 
-    function handleFullscreenChange() {
-      const isFullscreen =
+    async function exitFullscreen() {
+      const exit =
+        document.exitFullscreen ||
+        document.webkitExitFullscreen ||
+        document.mozCancelFullScreen ||
+        document.msExitFullscreen;
+
+      if (exit) {
+        await exit.call(document);
+      }
+    }
+
+    function getFullscreenElement() {
+      return (
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.mozFullScreenElement ||
-        document.msFullscreenElement;
-
-      fullscreenBar.classList.toggle("hidden", Boolean(isFullscreen));
-
-      if (
-        !isFullscreen &&
-        screen.orientation &&
-        screen.orientation.unlock
-      ) {
-        try {
-          screen.orientation.unlock();
-        } catch {
-          // Ignore browsers that do not support orientation unlocking.
-        }
-      }
+        document.msFullscreenElement
+      );
     }
 
-    /*
-      The welcome button only enables playback.
-      It does not automatically enter fullscreen.
-    */
+    function handleFullscreenChange() {
+      const isFullscreen = Boolean(getFullscreenElement());
+
+      /*
+        Hide the website fullscreen bar while any element is fullscreen.
+      */
+      fullscreenBar.classList.toggle("hidden", isFullscreen);
+    }
+
     enterButton.addEventListener("click", () => {
       autoplayEnabled = true;
       welcomeScreen.classList.add("hidden");
     });
 
-    /*
-      The fullscreen bar now works at all times, including before
-      a movie has been selected.
-    */
-    fullscreenBar.addEventListener("click", enterFullscreen);
+    fullscreenBar.addEventListener("click", enterWebsiteFullscreen);
 
     searchInput.addEventListener("input", renderVideos);
 
