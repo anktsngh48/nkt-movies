@@ -120,9 +120,9 @@
 
     .browser-note {
       position: absolute;
+      right: 20px;
       bottom: 24px;
       left: 20px;
-      right: 20px;
       color: var(--muted);
       font-size: 0.72rem;
       letter-spacing: 0.08em;
@@ -255,7 +255,6 @@
       width: 100vw;
       height: 56.25vw;
       max-height: 100vh;
-      border: 0;
     }
 
     #now-playing {
@@ -413,7 +412,6 @@
 </head>
 
 <body>
-  <!-- First page / welcome screen -->
   <div id="welcome-screen">
     <h1>NKT Movies</h1>
 
@@ -422,7 +420,7 @@
     </button>
 
     <div class="browser-note">
-      Works best on "Brave" Browser
+      Works best on Brave Browser
     </div>
   </div>
 
@@ -445,7 +443,7 @@
         <input
           id="search-input"
           type="search"
-          placeholder="Search your movie"
+          placeholder="Search by title, description or tags..."
           aria-label="Search videos"
         />
       </div>
@@ -458,11 +456,16 @@
 
   <script>
     /*
-      Add your YouTube videos here.
-      Replace the sample URLs with your own YouTube links.
+      Add your videos here.
+
+      Timestamp links are supported, including:
+      https://youtu.be/3HoiKIM97CA?t=8
+      https://youtu.be/3HoiKIM97CA?t=1m20s
+      https://www.youtube.com/watch?v=3HoiKIM97CA&start=45
     */
+
     const videos = [
-      {
+       {
         title: "Deewane Huye Paagal",
         description: "2005",
         tags: "Akshay Kumar, Shahid Kapoor, Sunil Suniel Shetty, Paresh Rawal, Asrani,",
@@ -485,52 +488,119 @@
         description: "2012",
         tags: "Akshay Kumar, Riteish Deshmukh, Arjun Rampal, Jacqueline Fernandez, Zareen Khan, Shreyas Talpade, Asin, Shreyas Talpade, Rishi Kapoor",
         youtubeUrl: "https://youtu.be/3HoiKIM97CA?t=8"
+      },
+      {
+        title: "Housefull 3",
+        description: "2016",
+        tags: "Akshay Kumar, Riteish Deshmukh, Arjun Rampal, Deepika Padukone",
+        youtubeUrl: "https://www.youtube.com/watch?v=IFv0IW1LWBk"
       }
     ];
 
-    const welcomeScreen = document.getElementById("welcome-screen");
-    const enterButton = document.getElementById("enter-button");
-    const websitePage = document.getElementById("website-page");
-    const fullscreenBar = document.getElementById("fs-bar");
-    const videoList = document.getElementById("video-list");
-    const playerBox = document.getElementById("player-box");
-    const nowPlaying = document.getElementById("now-playing");
-    const searchInput = document.getElementById("search-input");
+    const welcomeScreen =
+      document.getElementById("welcome-screen");
+
+    const enterButton =
+      document.getElementById("enter-button");
+
+    const websitePage =
+      document.getElementById("website-page");
+
+    const fullscreenBar =
+      document.getElementById("fs-bar");
+
+    const videoList =
+      document.getElementById("video-list");
+
+    const playerBox =
+      document.getElementById("player-box");
+
+    const nowPlaying =
+      document.getElementById("now-playing");
+
+    const searchInput =
+      document.getElementById("search-input");
 
     let autoplayEnabled = false;
 
-    function getYouTubeVideoId(url) {
+    /*
+      Extracts both the YouTube video ID and timestamp.
+
+      Supported timestamp formats:
+      ?t=8
+      ?t=45s
+      ?t=1m20s
+      ?t=1h2m10s
+      ?start=8
+    */
+    function getYouTubeVideoInfo(url) {
       try {
         const parsedUrl = new URL(url);
         const hostname = parsedUrl.hostname.toLowerCase();
         const pathname = parsedUrl.pathname;
 
+        let videoId = null;
+
         if (hostname === "youtu.be") {
-          return pathname.substring(1).split("/")[0];
+          videoId = pathname.substring(1).split("/")[0];
         }
 
         if (
           hostname.includes("youtube.com") &&
           pathname === "/watch"
         ) {
-          return parsedUrl.searchParams.get("v");
+          videoId = parsedUrl.searchParams.get("v");
         }
 
         if (
           hostname.includes("youtube.com") &&
           pathname.startsWith("/shorts/")
         ) {
-          return pathname.split("/shorts/")[1].split("/")[0];
+          videoId =
+            pathname.split("/shorts/")[1].split("/")[0];
         }
 
         if (
           hostname.includes("youtube.com") &&
           pathname.startsWith("/embed/")
         ) {
-          return pathname.split("/embed/")[1].split("/")[0];
+          videoId =
+            pathname.split("/embed/")[1].split("/")[0];
         }
 
-        return null;
+        if (!videoId) {
+          return null;
+        }
+
+        let startTime = 0;
+
+        const timestamp =
+          parsedUrl.searchParams.get("t") ||
+          parsedUrl.searchParams.get("start");
+
+        if (timestamp) {
+          if (/^\d+$/.test(timestamp)) {
+            startTime = Number(timestamp);
+          } else if (/^\d+s$/.test(timestamp)) {
+            startTime = Number(timestamp.replace("s", ""));
+          } else {
+            const match = timestamp.match(
+              /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/
+            );
+
+            if (match) {
+              startTime =
+                Number(match[1] || 0) * 3600 +
+                Number(match[2] || 0) * 60 +
+                Number(match[3] || 0);
+            }
+          }
+        }
+
+        return {
+          videoId,
+          startTime
+        };
       } catch {
         return null;
       }
@@ -539,13 +609,25 @@
     function renderVideos() {
       videoList.innerHTML = "";
 
-      const searchTerm = searchInput.value.trim().toLowerCase();
+      const searchTerm =
+        searchInput.value.trim().toLowerCase();
 
       const validVideos = videos
-        .map((video) => ({
-          ...video,
-          videoId: getYouTubeVideoId(video.youtubeUrl)
-        }))
+        .map((video) => {
+          const videoInfo = getYouTubeVideoInfo(
+            video.youtubeUrl
+          );
+
+          return {
+            ...video,
+            videoId: videoInfo
+              ? videoInfo.videoId
+              : null,
+            startTime: videoInfo
+              ? videoInfo.startTime
+              : 0
+          };
+        })
         .filter((video) => video.videoId)
         .filter((video) => {
           if (!searchTerm) {
@@ -573,6 +655,7 @@
             }
           </div>
         `;
+
         return;
       }
 
@@ -590,10 +673,11 @@
           <span class="open-icon" aria-hidden="true">›</span>
         `;
 
-        const titleElement = item.querySelector(".video-title");
-        const descriptionElement = item.querySelector(
-          ".video-description"
-        );
+        const titleElement =
+          item.querySelector(".video-title");
+
+        const descriptionElement =
+          item.querySelector(".video-description");
 
         titleElement.textContent =
           video.title || "Untitled video";
@@ -610,14 +694,24 @@
         }
 
         item.addEventListener("click", () => {
-          playVideo(video.videoId, video.title, item);
+          playVideo(
+            video.videoId,
+            video.title,
+            item,
+            video.startTime
+          );
         });
 
         videoList.appendChild(item);
       });
     }
 
-    function playVideo(videoId, title, selectedItem) {
+    function playVideo(
+      videoId,
+      title,
+      selectedItem,
+      startTime = 0
+    ) {
       if (!autoplayEnabled) {
         return;
       }
@@ -634,10 +728,16 @@
 
       const iframe = document.createElement("iframe");
 
-      iframe.src =
+      let youtubeUrl =
         "https://www.youtube.com/embed/" +
         encodeURIComponent(videoId) +
         "?autoplay=1&rel=0&playsinline=1";
+
+      if (Number.isFinite(startTime) && startTime > 0) {
+        youtubeUrl += "&start=" + Math.floor(startTime);
+      }
+
+      iframe.src = youtubeUrl;
 
       iframe.title = title || "Video player";
 
@@ -650,7 +750,8 @@
       playerBox.classList.add("active");
 
       nowPlaying.textContent =
-        "▶ NOW PLAYING: " + (title || "Untitled video");
+        "▶ NOW PLAYING: " +
+        (title || "Untitled video");
 
       nowPlaying.classList.add("visible");
 
@@ -691,7 +792,8 @@
     }
 
     async function enterWebsiteFullscreen() {
-      const fullscreenElement = getFullscreenElement();
+      const fullscreenElement =
+        getFullscreenElement();
 
       if (fullscreenElement) {
         await exitFullscreen();
@@ -705,7 +807,10 @@
         websitePage.msRequestFullscreen;
 
       if (!requestFullscreen) {
-        alert("Fullscreen mode is not supported by this browser.");
+        alert(
+          "Fullscreen mode is not supported by this browser."
+        );
+
         return;
       }
 
@@ -740,10 +845,13 @@
     }
 
     function handleFullscreenChange() {
-      const fullscreenElement = getFullscreenElement();
-      const isFullscreen = Boolean(fullscreenElement);
+      const isFullscreen =
+        Boolean(getFullscreenElement());
 
-      fullscreenBar.classList.toggle("hidden", isFullscreen);
+      fullscreenBar.classList.toggle(
+        "hidden",
+        isFullscreen
+      );
 
       if (
         !isFullscreen &&
@@ -753,7 +861,9 @@
         try {
           screen.orientation.unlock();
         } catch {
-          console.log("Orientation unlock is not supported.");
+          console.log(
+            "Orientation unlock is not supported."
+          );
         }
       }
     }
@@ -768,7 +878,10 @@
       enterWebsiteFullscreen
     );
 
-    searchInput.addEventListener("input", renderVideos);
+    searchInput.addEventListener(
+      "input",
+      renderVideos
+    );
 
     [
       "fullscreenchange",
@@ -786,4 +899,3 @@
   </script>
 </body>
 </html>
-```
