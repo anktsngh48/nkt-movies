@@ -321,6 +321,14 @@
       text-overflow: ellipsis;
     }
 
+    /*
+      When there is no description, remove the title's bottom margin.
+      This keeps the top and bottom vertical padding equal.
+    */
+    .video-item.no-description .video-title {
+      margin-bottom: 0;
+    }
+
     .video-description {
       margin: 0;
       color: var(--muted);
@@ -328,6 +336,10 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .video-item.no-description .video-description {
+      display: none;
     }
 
     .open-icon {
@@ -400,6 +412,9 @@
   <script>
     /*
       Add your YouTube videos here.
+
+      The description is optional.
+      If you do not want a description, remove the description line.
     */
 
     const videos = [
@@ -409,13 +424,17 @@
         youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       },
       {
-        title: "Deewane huye pagal",
-        youtubeUrl: "https://www.youtube.com/watch?v=pfmcQSemA6U"
+        title: "Tutorial",
+        youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_2"
       },
       {
         title: "Event Highlights",
         description: "Highlights from the event",
         youtubeUrl: "https://youtu.be/VIDEO_ID_3"
+      },
+      {
+        title: "Video Without Description",
+        youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_4"
       }
     ];
 
@@ -499,9 +518,25 @@
           <span class="open-icon">›</span>
         `;
 
-        item.querySelector(".video-title").textContent = video.title;
-        item.querySelector(".video-description").textContent =
-          video.description;
+        const titleElement = item.querySelector(".video-title");
+        const descriptionElement = item.querySelector(".video-description");
+
+        titleElement.textContent = video.title || "Untitled video";
+
+        const description =
+          typeof video.description === "string"
+            ? video.description.trim()
+            : "";
+
+        descriptionElement.textContent = description;
+
+        /*
+          Hide the description and remove the title bottom margin
+          when no description is provided.
+        */
+        if (!description) {
+          item.classList.add("no-description");
+        }
 
         item.addEventListener("click", () => {
           playVideo(video.videoId, video.title, index);
@@ -537,7 +572,7 @@
         encodeURIComponent(videoId) +
         "?autoplay=1&rel=0&playsinline=1";
 
-      iframe.title = title;
+      iframe.title = title || "Video player";
 
       iframe.allow =
         "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
@@ -547,7 +582,9 @@
       playerBox.appendChild(iframe);
       playerBox.classList.add("active");
 
-      nowPlaying.textContent = "▶ NOW PLAYING: " + title;
+      nowPlaying.textContent =
+        "▶ NOW PLAYING: " + (title || "Untitled video");
+
       nowPlaying.classList.add("visible");
 
       /*
