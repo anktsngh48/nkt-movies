@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>NKT Movies</title>
 
   <style>
@@ -58,7 +57,6 @@
     }
 
     /* Welcome screen */
-
     #welcome-screen {
       position: fixed;
       inset: 0;
@@ -81,11 +79,7 @@
       font-size: clamp(2rem, 9vw, 4rem);
       font-weight: 900;
       letter-spacing: 0.12em;
-      background: linear-gradient(
-        135deg,
-        var(--accent),
-        var(--accent2)
-      );
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
@@ -115,7 +109,6 @@
     }
 
     /* Main page */
-
     .page {
       position: relative;
       z-index: 1;
@@ -126,9 +119,15 @@
       padding-bottom: 40px;
     }
 
+    /*
+      Fullscreen button.
+      This is a real button so it works with keyboard and touch input.
+    */
     #fs-bar {
+      display: block;
       width: 100%;
       padding: 8px 20px;
+      border: 0;
       border-bottom: 1px solid rgba(0, 229, 255, 0.09);
       background: rgba(0, 229, 255, 0.035);
       color: var(--accent);
@@ -142,8 +141,34 @@
       user-select: none;
     }
 
+    #fs-bar:hover {
+      background: rgba(0, 229, 255, 0.12);
+    }
+
     #fs-bar.hidden {
       display: none;
+    }
+
+    /*
+      Make the entire website fill the display when fullscreen is active.
+    */
+    html:fullscreen,
+    html:-webkit-full-screen {
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg);
+    }
+
+    html:fullscreen body,
+    html:-webkit-full-screen body {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    html:fullscreen .page,
+    html:-webkit-full-screen .page {
+      max-width: none;
+      min-height: 100vh;
     }
 
     header {
@@ -158,11 +183,7 @@
       font-size: clamp(1.5rem, 5vw, 2.3rem);
       font-weight: 900;
       letter-spacing: 0.12em;
-      background: linear-gradient(
-        135deg,
-        var(--accent),
-        var(--accent2)
-      );
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
@@ -206,8 +227,7 @@
       border: 0;
     }
 
-    /* Fullscreen landscape player */
-
+    /* Optional fullscreen mode for the video player itself */
     #player-box:fullscreen {
       display: flex;
       align-items: center;
@@ -258,7 +278,6 @@
     }
 
     /* Search box */
-
     .search-box {
       margin-bottom: 20px;
     }
@@ -297,7 +316,6 @@
     }
 
     /* Video list */
-
     #video-list {
       display: flex;
       flex-direction: column;
@@ -351,10 +369,6 @@
       text-overflow: ellipsis;
     }
 
-    /*
-      When there is no description, remove the title's bottom margin.
-      This keeps the top and bottom vertical padding equal.
-    */
     .video-item.no-description .video-title {
       margin-bottom: 0;
     }
@@ -412,16 +426,17 @@
 </head>
 
 <body>
-  <!-- Enter only enables video playback. It does not start a video. -->
+  <!-- The welcome screen enables video playback. It does not start a video. -->
   <div id="welcome-screen">
     <h1>NKT Movies</h1>
     <button id="enter-button" type="button">Let me in</button>
   </div>
 
   <div class="page">
-    <div id="fs-bar" onclick="enterFullscreen()">
+    <!-- This button now enters fullscreen even before a movie is selected. -->
+    <button id="fs-bar" type="button">
       Tap here for fullscreen mode
-    </div>
+    </button>
 
     <header>
       <h1>NKT Movies</h1>
@@ -433,7 +448,6 @@
 
       <div id="now-playing"></div>
 
-      <!-- Search checks title, description and hidden tags -->
       <div class="search-box">
         <input
           id="search-input"
@@ -444,7 +458,6 @@
       </div>
 
       <h2 class="section-title">Available Movies</h2>
-
       <div id="video-list"></div>
     </main>
   </div>
@@ -453,15 +466,12 @@
     /*
       Add your YouTube videos here.
 
-      The description is optional.
-
-      Tags are also optional and are used only for searching.
-      Tags must be comma-separated, for example:
-      "Shahrukh, coal, 2012"
-
-      Tags are not displayed anywhere in the user interface.
+      Supported URL formats:
+      - https://www.youtube.com/watch?v=VIDEO_ID
+      - https://youtu.be/VIDEO_ID
+      - https://www.youtube.com/shorts/VIDEO_ID
+      - https://www.youtube.com/embed/VIDEO_ID
     */
-
     const videos = [
       {
         title: "Welcome Video",
@@ -483,6 +493,7 @@
       },
       {
         title: "Video Without Description",
+        description: "",
         tags: "movies, entertainment",
         youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_4"
       }
@@ -490,6 +501,7 @@
 
     const welcomeScreen = document.getElementById("welcome-screen");
     const enterButton = document.getElementById("enter-button");
+    const fullscreenBar = document.getElementById("fs-bar");
     const videoList = document.getElementById("video-list");
     const playerBox = document.getElementById("player-box");
     const nowPlaying = document.getElementById("now-playing");
@@ -582,7 +594,6 @@
             <h3 class="video-title"></h3>
             <p class="video-description"></p>
           </div>
-
           <span class="open-icon">›</span>
         `;
 
@@ -598,10 +609,6 @@
 
         descriptionElement.textContent = description;
 
-        /*
-          Hide the description and remove the title bottom margin
-          when no description is provided.
-        */
         if (!description) {
           item.classList.add("no-description");
         }
@@ -654,48 +661,43 @@
         "▶ NOW PLAYING: " + (title || "Untitled video");
 
       nowPlaying.classList.add("visible");
-
-      /*
-        The user clicked the video button.
-        This allows the browser to enter fullscreen.
-      */
-      requestPlayerFullscreen();
     }
 
-    async function requestPlayerFullscreen() {
+    /*
+      Enters fullscreen for the entire website.
+
+      This is called directly from the fullscreen button's click event,
+      which is required by modern browsers.
+    */
+    async function enterFullscreen() {
+      const page = document.documentElement;
+
       const requestFullscreen =
-        playerBox.requestFullscreen ||
-        playerBox.webkitRequestFullscreen ||
-        playerBox.mozRequestFullScreen ||
-        playerBox.msRequestFullScreen;
+        page.requestFullscreen ||
+        page.webkitRequestFullscreen ||
+        page.mozRequestFullScreen ||
+        page.msRequestFullscreen;
 
       if (!requestFullscreen) {
+        alert("Fullscreen mode is not supported by this browser.");
         return;
       }
 
       try {
-        await requestFullscreen.call(playerBox);
+        await requestFullscreen.call(page);
 
-        /*
-          Lock the phone to landscape mode.
-          This works on supported mobile browsers.
-        */
         if (
           screen.orientation &&
           screen.orientation.lock
         ) {
-          await screen.orientation.lock("landscape");
+          try {
+            await screen.orientation.lock("landscape");
+          } catch {
+            // Some browsers do not allow orientation locking.
+          }
         }
       } catch (error) {
-        console.log(
-          "Fullscreen or landscape mode is not supported by this browser."
-        );
-      }
-    }
-
-    function enterFullscreen() {
-      if (playerBox.classList.contains("active")) {
-        requestPlayerFullscreen();
+        console.error("Unable to enter fullscreen mode:", error);
       }
     }
 
@@ -706,25 +708,24 @@
         document.mozFullScreenElement ||
         document.msFullscreenElement;
 
-      document
-        .getElementById("fs-bar")
-        .classList.toggle("hidden", Boolean(isFullscreen));
+      fullscreenBar.classList.toggle("hidden", Boolean(isFullscreen));
 
-      /*
-        Unlock the screen when the user exits fullscreen.
-        This is supported only on some browsers.
-      */
       if (
         !isFullscreen &&
         screen.orientation &&
         screen.orientation.unlock
       ) {
-        screen.orientation.unlock();
+        try {
+          screen.orientation.unlock();
+        } catch {
+          // Ignore browsers that do not support orientation unlocking.
+        }
       }
     }
 
     /*
-      Enter enables autoplay but does not play anything.
+      The welcome button only enables playback.
+      It does not automatically enter fullscreen.
     */
     enterButton.addEventListener("click", () => {
       autoplayEnabled = true;
@@ -732,9 +733,11 @@
     });
 
     /*
-      Re-render the videos whenever the search text changes.
-      Searches title, description and tags.
+      The fullscreen bar now works at all times, including before
+      a movie has been selected.
     */
+    fullscreenBar.addEventListener("click", enterFullscreen);
+
     searchInput.addEventListener("input", renderVideos);
 
     [
