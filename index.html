@@ -2,157 +2,320 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Video Library</title>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Sora:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #05080f;
+      --card: #111827;
+      --accent: #00e5ff;
+      --accent2: #7b61ff;
+      --text: #e8f0fe;
+      --muted: #5a6a82;
+      --danger: #ff4f6a;
+      --success: #00e5a0;
+      --border: rgba(0, 229, 255, 0.12);
+      --glow: 0 0 30px rgba(0, 229, 255, 0.35);
+    }
+
     * {
       box-sizing: border-box;
     }
 
+    html,
     body {
+      min-height: 100%;
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f3f4f6;
-      color: #111827;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Sora", sans-serif;
+      overflow-x: hidden;
     }
 
-    .container {
-      width: 100%;
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 20px 16px 40px;
+    body {
+      position: relative;
     }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(
+          ellipse 60% 50% at 20% 10%,
+          rgba(0, 229, 255, 0.05) 0%,
+          transparent 60%
+        ),
+        radial-gradient(
+          ellipse 50% 40% at 80% 80%,
+          rgba(123, 97, 255, 0.06) 0%,
+          transparent 60%
+        );
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 760px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+
+    /* Top bar */
+
+    #fs-bar {
+      width: 100%;
+      padding: 8px 20px;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.09);
+      background: rgba(0, 229, 255, 0.035);
+      color: var(--accent);
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-align: center;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+
+    #fs-bar:hover {
+      background: rgba(0, 229, 255, 0.08);
+    }
+
+    #fs-bar.hidden {
+      display: none;
+    }
+
+    /* Header */
 
     header {
+      padding: 26px 20px 22px;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.08);
       text-align: center;
-      margin-bottom: 24px;
     }
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
+    header h1 {
+      margin: 0;
+      font-family: "Orbitron", sans-serif;
+      font-size: clamp(1.5rem, 5vw, 2.3rem);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      background: linear-gradient(
+        135deg,
+        var(--accent) 0%,
+        var(--accent2) 100%
+      );
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.4));
     }
 
     header p {
-      margin: 0;
-      color: #6b7280;
-      font-size: 15px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
     }
 
-    .video-list {
-      display: grid;
-      gap: 14px;
+    /* Main content */
+
+    main {
+      padding: 24px 16px;
     }
 
-    .video-card {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+    #player-box {
+      display: none;
       width: 100%;
-      padding: 14px;
-      border: 0;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      margin-bottom: 22px;
+      border: 1px solid var(--border);
       border-radius: 14px;
-      background: #ffffff;
-      color: #111827;
-      text-align: left;
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      background: #000;
+      box-shadow:
+        0 0 50px rgba(0, 229, 255, 0.13),
+        0 0 100px rgba(123, 97, 255, 0.09);
     }
 
-    .video-card:hover {
-      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.14);
+    #player-box.active {
+      display: block;
     }
 
-    .video-card:active {
-      transform: scale(0.98);
+    #player-box iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
     }
 
-    .thumbnail {
-      position: relative;
+    #now-playing {
+      display: none;
+      margin: 0 0 14px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #now-playing.visible {
+      display: block;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* Video list */
+
+    #video-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .video-item {
       display: flex;
       align-items: center;
-      justify-content: center;
-      width: 110px;
-      height: 68px;
-      flex: 0 0 110px;
-      overflow: hidden;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
       border-radius: 10px;
-      background: #dc2626;
+      background: var(--card);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
     }
 
-    .thumbnail img {
+    .video-item:hover {
+      border-color: rgba(0, 229, 255, 0.45);
+      background: #172237;
+      box-shadow: var(--glow);
+      transform: translateY(-1px);
+    }
+
+    .video-item.playing {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.16);
+    }
+
+    .video-thumbnail {
+      position: relative;
+      flex: 0 0 100px;
+      width: 100px;
+      height: 56px;
+      overflow: hidden;
+      border-radius: 7px;
+      background: #000;
+    }
+
+    .video-thumbnail img {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .play-button {
+    .play-overlay {
       position: absolute;
+      top: 50%;
+      left: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 26px;
-      border-radius: 8px;
-      background: rgba(220, 38, 38, 0.95);
+      width: 32px;
+      height: 24px;
+      border-radius: 7px;
+      background: rgba(255, 0, 0, 0.9);
       color: white;
-      font-size: 17px;
+      font-size: 14px;
+      transform: translate(-50%, -50%);
     }
 
     .video-info {
-      min-width: 0;
       flex: 1;
+      min-width: 0;
     }
 
     .video-title {
-      margin: 0 0 6px;
-      font-size: 17px;
-      line-height: 1.25;
-    }
-
-    .video-description {
-      margin: 0;
-      color: #6b7280;
-      font-size: 14px;
+      margin: 0 0 5px;
+      color: var(--text);
+      font-size: 0.84rem;
+      font-weight: 600;
       line-height: 1.3;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
+    .video-description {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.7rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .open-icon {
-      color: #9ca3af;
-      font-size: 22px;
       flex: 0 0 auto;
+      color: var(--accent);
+      font-size: 1.35rem;
+      opacity: 0.5;
     }
 
     .empty-message {
-      padding: 30px;
+      padding: 28px 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
       text-align: center;
-      color: #6b7280;
-      background: white;
-      border-radius: 14px;
     }
 
     @media (max-width: 480px) {
-      .thumbnail {
-        width: 90px;
-        height: 60px;
-        flex-basis: 90px;
+      main {
+        padding: 20px 12px;
+      }
+
+      #player-box {
+        border-radius: 10px;
+      }
+
+      .video-thumbnail {
+        flex-basis: 78px;
+        width: 78px;
+        height: 45px;
       }
 
       .video-title {
-        font-size: 15px;
+        font-size: 0.76rem;
       }
 
       .video-description {
-        font-size: 13px;
+        font-size: 0.65rem;
       }
 
       .open-icon {
@@ -163,23 +326,38 @@
 </head>
 
 <body>
-  <main class="container">
+  <div class="page">
+
+    <div id="fs-bar" onclick="enterFullscreen()">
+      Tap here for fullscreen mode
+    </div>
+
     <header>
-      <h1>Video Library</h1>
-      <p>Tap a video to watch it on YouTube.</p>
+      <h1>VIDEO LIBRARY</h1>
+      <p>Select a video to watch</p>
     </header>
 
-    <section id="videoList" class="video-list"></section>
-  </main>
+    <main>
+      <div id="player-box"></div>
+
+      <div id="now-playing"></div>
+
+      <h2 class="section-title">Available Videos</h2>
+
+      <div id="video-list"></div>
+    </main>
+  </div>
 
   <script>
     /*
-      Add or replace videos below.
+      Add your YouTube videos here.
 
-      Supported YouTube URL formats include:
+      Supported formats:
+
       https://www.youtube.com/watch?v=VIDEO_ID
       https://youtu.be/VIDEO_ID
       https://www.youtube.com/shorts/VIDEO_ID
+      https://www.youtube.com/embed/VIDEO_ID
     */
 
     const videos = [
@@ -200,35 +378,39 @@
       }
     ];
 
-    const videoList = document.getElementById("videoList");
+    const videoList = document.getElementById("video-list");
+    const playerBox = document.getElementById("player-box");
+    const nowPlaying = document.getElementById("now-playing");
 
     function getYouTubeVideoId(url) {
       try {
         const parsedUrl = new URL(url);
+        const hostname = parsedUrl.hostname.toLowerCase();
+        const pathname = parsedUrl.pathname;
 
-        if (parsedUrl.hostname === "youtu.be") {
-          return parsedUrl.pathname.substring(1);
+        if (hostname === "youtu.be") {
+          return pathname.substring(1).split("/")[0];
         }
 
         if (
-          parsedUrl.hostname.includes("youtube.com") &&
-          parsedUrl.pathname === "/watch"
+          hostname.includes("youtube.com") &&
+          pathname === "/watch"
         ) {
           return parsedUrl.searchParams.get("v");
         }
 
         if (
-          parsedUrl.hostname.includes("youtube.com") &&
-          parsedUrl.pathname.startsWith("/shorts/")
+          hostname.includes("youtube.com") &&
+          pathname.startsWith("/shorts/")
         ) {
-          return parsedUrl.pathname.split("/shorts/")[1].split("/")[0];
+          return pathname.split("/shorts/")[1].split("/")[0];
         }
 
         if (
-          parsedUrl.hostname.includes("youtube.com") &&
-          parsedUrl.pathname.startsWith("/embed/")
+          hostname.includes("youtube.com") &&
+          pathname.startsWith("/embed/")
         ) {
-          return parsedUrl.pathname.split("/embed/")[1].split("/")[0];
+          return pathname.split("/embed/")[1].split("/")[0];
         }
 
         return null;
@@ -238,58 +420,131 @@
     }
 
     function renderVideos() {
-      if (!videos.length) {
+      videoList.innerHTML = "";
+
+      const validVideos = videos.filter((video) => {
+        return getYouTubeVideoId(video.youtubeUrl);
+      });
+
+      if (validVideos.length === 0) {
         videoList.innerHTML = `
           <div class="empty-message">
-            No videos are available.
+            No valid YouTube videos found.
           </div>
         `;
         return;
       }
 
-      videos.forEach((video) => {
+      validVideos.forEach((video, index) => {
         const videoId = getYouTubeVideoId(video.youtubeUrl);
 
-        if (!videoId) {
-          return;
-        }
+        const item = document.createElement("button");
+        item.className = "video-item";
+        item.type = "button";
+        item.dataset.index = index;
 
-        const card = document.createElement("button");
-        card.className = "video-card";
-        card.type = "button";
-
-        card.innerHTML = `
-          <div class="thumbnail">
+        item.innerHTML = `
+          <div class="video-thumbnail">
             <img
               src="https://img.youtube.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg"
               alt=""
             />
-            <span class="play-button">▶</span>
+            <span class="play-overlay">▶</span>
           </div>
 
           <div class="video-info">
-            <h2 class="video-title"></h2>
+            <h3 class="video-title"></h3>
             <p class="video-description"></p>
           </div>
 
-          <div class="open-icon">›</div>
+          <span class="open-icon">›</span>
         `;
 
-        card.querySelector(".video-title").textContent = video.title;
-        card.querySelector(".video-description").textContent =
+        item.querySelector(".video-title").textContent = video.title;
+        item.querySelector(".video-description").textContent =
           video.description;
 
-        card.addEventListener("click", () => {
-          window.open(
-            video.youtubeUrl,
-            "_blank",
-            "noopener,noreferrer"
-          );
+        item.addEventListener("click", () => {
+          playVideo(videoId, video.title, index);
         });
 
-        videoList.appendChild(card);
+        videoList.appendChild(item);
       });
     }
+
+    function playVideo(videoId, title, index) {
+      document.querySelectorAll(".video-item").forEach((item) => {
+        item.classList.remove("playing");
+      });
+
+      const selectedItem = document.querySelector(
+        `.video-item[data-index="${index}"]`
+      );
+
+      if (selectedItem) {
+        selectedItem.classList.add("playing");
+      }
+
+      playerBox.innerHTML = "";
+
+      const iframe = document.createElement("iframe");
+
+      iframe.src =
+        "https://www.youtube.com/embed/" +
+        encodeURIComponent(videoId) +
+        "?autoplay=1&rel=0";
+
+      iframe.title = title;
+      iframe.allow =
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.allowFullscreen = true;
+
+      playerBox.appendChild(iframe);
+      playerBox.classList.add("active");
+
+      nowPlaying.textContent = "▶  NOW PLAYING: " + title;
+      nowPlaying.classList.add("visible");
+
+      playerBox.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+
+    function enterFullscreen() {
+      const page = document.documentElement;
+
+      const requestFullscreen =
+        page.requestFullscreen ||
+        page.webkitRequestFullscreen ||
+        page.mozRequestFullScreen ||
+        page.msRequestFullscreen;
+
+      if (requestFullscreen) {
+        requestFullscreen.call(page);
+      }
+    }
+
+    function handleFullscreenChange() {
+      const isFullscreen =
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
+
+      document
+        .getElementById("fs-bar")
+        .classList.toggle("hidden", Boolean(isFullscreen));
+    }
+
+    [
+      "fullscreenchange",
+      "webkitfullscreenchange",
+      "mozfullscreenchange",
+      "MSFullscreenChange"
+    ].forEach((eventName) => {
+      document.addEventListener(eventName, handleFullscreenChange);
+    });
 
     renderVideos();
   </script>
