@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Video Library</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    .video-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .video-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 14px;
+      background: #ffffff;
+      color: #111827;
+      text-align: left;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .video-card:hover {
+      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .video-card:active {
+      transform: scale(0.98);
+    }
+
+    .thumbnail {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 110px;
+      height: 68px;
+      flex: 0 0 110px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #dc2626;
+    }
+
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .play-button {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 26px;
+      border-radius: 8px;
+      background: rgba(220, 38, 38, 0.95);
+      color: white;
+      font-size: 17px;
+    }
+
+    .video-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .video-title {
+      margin: 0 0 6px;
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    .video-description {
+      margin: 0;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .open-icon {
+      color: #9ca3af;
+      font-size: 22px;
+      flex: 0 0 auto;
+    }
+
+    .empty-message {
+      padding: 30px;
+      text-align: center;
+      color: #6b7280;
+      background: white;
+      border-radius: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .thumbnail {
+        width: 90px;
+        height: 60px;
+        flex-basis: 90px;
+      }
+
+      .video-title {
+        font-size: 15px;
+      }
+
+      .video-description {
+        font-size: 13px;
+      }
+
+      .open-icon {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <h1>Video Library</h1>
+      <p>Tap a video to watch it on YouTube.</p>
+    </header>
+
+    <section id="videoList" class="video-list"></section>
+  </main>
+
+  <script>
+    /*
+      Add or replace videos below.
+
+      Supported YouTube URL formats include:
+      https://www.youtube.com/watch?v=VIDEO_ID
+      https://youtu.be/VIDEO_ID
+      https://www.youtube.com/shorts/VIDEO_ID
+    */
+
+    const videos = [
+      {
+        title: "Welcome Video",
+        description: "Introduction video",
+        youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      },
+      {
+        title: "Tutorial",
+        description: "Step-by-step tutorial",
+        youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_2"
+      },
+      {
+        title: "Event Highlights",
+        description: "Highlights from the event",
+        youtubeUrl: "https://youtu.be/VIDEO_ID_3"
+      }
+    ];
+
+    const videoList = document.getElementById("videoList");
+
+    function getYouTubeVideoId(url) {
+      try {
+        const parsedUrl = new URL(url);
+
+        if (parsedUrl.hostname === "youtu.be") {
+          return parsedUrl.pathname.substring(1);
+        }
+
+        if (
+          parsedUrl.hostname.includes("youtube.com") &&
+          parsedUrl.pathname === "/watch"
+        ) {
+          return parsedUrl.searchParams.get("v");
+        }
+
+        if (
+          parsedUrl.hostname.includes("youtube.com") &&
+          parsedUrl.pathname.startsWith("/shorts/")
+        ) {
+          return parsedUrl.pathname.split("/shorts/")[1].split("/")[0];
+        }
+
+        if (
+          parsedUrl.hostname.includes("youtube.com") &&
+          parsedUrl.pathname.startsWith("/embed/")
+        ) {
+          return parsedUrl.pathname.split("/embed/")[1].split("/")[0];
+        }
+
+        return null;
+      } catch {
+        return null;
+      }
+    }
+
+    function renderVideos() {
+      if (!videos.length) {
+        videoList.innerHTML = `
+          <div class="empty-message">
+            No videos are available.
+          </div>
+        `;
+        return;
+      }
+
+      videos.forEach((video) => {
+        const videoId = getYouTubeVideoId(video.youtubeUrl);
+
+        if (!videoId) {
+          return;
+        }
+
+        const card = document.createElement("button");
+        card.className = "video-card";
+        card.type = "button";
+
+        card.innerHTML = `
+          <div class="thumbnail">
+            <img
+              src="https://img.youtube.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg"
+              alt=""
+            />
+            <span class="play-button">▶</span>
+          </div>
+
+          <div class="video-info">
+            <h2 class="video-title"></h2>
+            <p class="video-description"></p>
+          </div>
+
+          <div class="open-icon">›</div>
+        `;
+
+        card.querySelector(".video-title").textContent = video.title;
+        card.querySelector(".video-description").textContent =
+          video.description;
+
+        card.addEventListener("click", () => {
+          window.open(
+            video.youtubeUrl,
+            "_blank",
+            "noopener,noreferrer"
+          );
+        });
+
+        videoList.appendChild(card);
+      });
+    }
+
+    renderVideos();
+  </script>
+</body>
+</html>
