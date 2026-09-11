@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Video Library</title>
+  <title>NKT Movies</title>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Sora:wght@400;500;600&display=swap');
+    @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Sora:wght@400;500;600&display=swap");
 
     :root {
       --bg: #05080f;
@@ -16,8 +16,6 @@
       --accent2: #7b61ff;
       --text: #e8f0fe;
       --muted: #5a6a82;
-      --danger: #ff4f6a;
-      --success: #00e5a0;
       --border: rgba(0, 229, 255, 0.12);
       --glow: 0 0 30px rgba(0, 229, 255, 0.35);
     }
@@ -49,15 +47,74 @@
       background:
         radial-gradient(
           ellipse 60% 50% at 20% 10%,
-          rgba(0, 229, 255, 0.05) 0%,
+          rgba(0, 229, 255, 0.05),
           transparent 60%
         ),
         radial-gradient(
           ellipse 50% 40% at 80% 80%,
-          rgba(123, 97, 255, 0.06) 0%,
+          rgba(123, 97, 255, 0.06),
           transparent 60%
         );
     }
+
+    /* Initial welcome screen */
+
+    #welcome-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 26px;
+      background: var(--bg);
+    }
+
+    #welcome-screen.hidden {
+      display: none;
+    }
+
+    #welcome-screen h1 {
+      margin: 0;
+      font-family: "Orbitron", sans-serif;
+      font-size: clamp(2rem, 9vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      background: linear-gradient(
+        135deg,
+        var(--accent),
+        var(--accent2)
+      );
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.4));
+    }
+
+    #enter-button {
+      padding: 14px 42px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      background: rgba(0, 229, 255, 0.08);
+      color: var(--accent);
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.18);
+      transition: 0.2s ease;
+    }
+
+    #enter-button:hover {
+      background: rgba(0, 229, 255, 0.2);
+      box-shadow: 0 0 35px rgba(0, 229, 255, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Main layout */
 
     .page {
       position: relative;
@@ -68,8 +125,6 @@
       margin: 0 auto;
       padding-bottom: 40px;
     }
-
-    /* Top bar */
 
     #fs-bar {
       width: 100%;
@@ -85,18 +140,11 @@
       text-transform: uppercase;
       cursor: pointer;
       user-select: none;
-      transition: background 0.2s ease;
-    }
-
-    #fs-bar:hover {
-      background: rgba(0, 229, 255, 0.08);
     }
 
     #fs-bar.hidden {
       display: none;
     }
-
-    /* Header */
 
     header {
       padding: 26px 20px 22px;
@@ -112,8 +160,8 @@
       letter-spacing: 0.12em;
       background: linear-gradient(
         135deg,
-        var(--accent) 0%,
-        var(--accent2) 100%
+        var(--accent),
+        var(--accent2)
       );
       background-clip: text;
       -webkit-background-clip: text;
@@ -128,8 +176,6 @@
       letter-spacing: 0.2em;
       text-transform: uppercase;
     }
-
-    /* Main content */
 
     main {
       padding: 24px 16px;
@@ -158,6 +204,42 @@
       width: 100%;
       height: 100%;
       border: 0;
+    }
+
+    /* Fullscreen player */
+
+    #player-box:fullscreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    #player-box:fullscreen iframe {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #player-box:-webkit-full-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    #player-box:-webkit-full-screen iframe {
+      width: 100vw;
+      height: 100vh;
     }
 
     #now-playing {
@@ -196,7 +278,7 @@
       align-items: center;
       gap: 12px;
       width: 100%;
-      padding: 10px 14px;
+      padding: 14px;
       border: 1px solid var(--border);
       border-radius: 10px;
       background: var(--card);
@@ -220,39 +302,6 @@
     .video-item.playing {
       border-color: var(--accent);
       box-shadow: 0 0 20px rgba(0, 229, 255, 0.16);
-    }
-
-    .video-thumbnail {
-      position: relative;
-      flex: 0 0 100px;
-      width: 100px;
-      height: 56px;
-      overflow: hidden;
-      border-radius: 7px;
-      background: #000;
-    }
-
-    .video-thumbnail img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .play-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 24px;
-      border-radius: 7px;
-      background: rgba(255, 0, 0, 0.9);
-      color: white;
-      font-size: 14px;
-      transform: translate(-50%, -50%);
     }
 
     .video-info {
@@ -304,12 +353,6 @@
         border-radius: 10px;
       }
 
-      .video-thumbnail {
-        flex-basis: 78px;
-        width: 78px;
-        height: 45px;
-      }
-
       .video-title {
         font-size: 0.76rem;
       }
@@ -326,14 +369,19 @@
 </head>
 
 <body>
-  <div class="page">
+  <!-- This screen only enables playback permissions. It does not start a video. -->
+  <div id="welcome-screen">
+    <h1>NKT Movies</h1>
+    <button id="enter-button" type="button">Enter</button>
+  </div>
 
+  <div class="page">
     <div id="fs-bar" onclick="enterFullscreen()">
       Tap here for fullscreen mode
     </div>
 
     <header>
-      <h1>VIDEO LIBRARY</h1>
+      <h1>NKT Movies</h1>
       <p>Select a video to watch</p>
     </header>
 
@@ -378,9 +426,13 @@
       }
     ];
 
+    const welcomeScreen = document.getElementById("welcome-screen");
+    const enterButton = document.getElementById("enter-button");
     const videoList = document.getElementById("video-list");
     const playerBox = document.getElementById("player-box");
     const nowPlaying = document.getElementById("now-playing");
+
+    let autoplayEnabled = false;
 
     function getYouTubeVideoId(url) {
       try {
@@ -422,9 +474,12 @@
     function renderVideos() {
       videoList.innerHTML = "";
 
-      const validVideos = videos.filter((video) => {
-        return getYouTubeVideoId(video.youtubeUrl);
-      });
+      const validVideos = videos
+        .map((video) => ({
+          ...video,
+          videoId: getYouTubeVideoId(video.youtubeUrl)
+        }))
+        .filter((video) => video.videoId);
 
       if (validVideos.length === 0) {
         videoList.innerHTML = `
@@ -436,22 +491,13 @@
       }
 
       validVideos.forEach((video, index) => {
-        const videoId = getYouTubeVideoId(video.youtubeUrl);
-
         const item = document.createElement("button");
+
         item.className = "video-item";
         item.type = "button";
         item.dataset.index = index;
 
         item.innerHTML = `
-          <div class="video-thumbnail">
-            <img
-              src="https://img.youtube.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg"
-              alt=""
-            />
-            <span class="play-overlay">▶</span>
-          </div>
-
           <div class="video-info">
             <h3 class="video-title"></h3>
             <p class="video-description"></p>
@@ -465,7 +511,7 @@
           video.description;
 
         item.addEventListener("click", () => {
-          playVideo(videoId, video.title, index);
+          playVideo(video.videoId, video.title, index);
         });
 
         videoList.appendChild(item);
@@ -473,6 +519,10 @@
     }
 
     function playVideo(videoId, title, index) {
+      if (!autoplayEnabled) {
+        return;
+      }
+
       document.querySelectorAll(".video-item").forEach((item) => {
         item.classList.remove("playing");
       });
@@ -492,7 +542,7 @@
       iframe.src =
         "https://www.youtube.com/embed/" +
         encodeURIComponent(videoId) +
-        "?autoplay=1&rel=0";
+        "?autoplay=1&rel=0&playsinline=1";
 
       iframe.title = title;
       iframe.allow =
@@ -502,26 +552,39 @@
       playerBox.appendChild(iframe);
       playerBox.classList.add("active");
 
-      nowPlaying.textContent = "▶  NOW PLAYING: " + title;
+      nowPlaying.textContent = "▶ NOW PLAYING: " + title;
       nowPlaying.classList.add("visible");
 
-      playerBox.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+      /*
+        This is called from the user's video-button click.
+        That allows the browser to authorize fullscreen mode.
+      */
+      requestPlayerFullscreen();
+    }
+
+    function requestPlayerFullscreen() {
+      const requestFullscreen =
+        playerBox.requestFullscreen ||
+        playerBox.webkitRequestFullscreen ||
+        playerBox.mozRequestFullScreen ||
+        playerBox.msRequestFullscreen;
+
+      if (!requestFullscreen) {
+        return;
+      }
+
+      const result = requestFullscreen.call(playerBox);
+
+      if (result && typeof result.catch === "function") {
+        result.catch(() => {
+          // Fullscreen was blocked or is not supported.
+        });
+      }
     }
 
     function enterFullscreen() {
-      const page = document.documentElement;
-
-      const requestFullscreen =
-        page.requestFullscreen ||
-        page.webkitRequestFullscreen ||
-        page.mozRequestFullScreen ||
-        page.msRequestFullscreen;
-
-      if (requestFullscreen) {
-        requestFullscreen.call(page);
+      if (playerBox.classList.contains("active")) {
+        requestPlayerFullscreen();
       }
     }
 
@@ -536,6 +599,15 @@
         .getElementById("fs-bar")
         .classList.toggle("hidden", Boolean(isFullscreen));
     }
+
+    /*
+      Enter only enables autoplay and opens the movie list.
+      It does not select or play any video.
+    */
+    enterButton.addEventListener("click", () => {
+      autoplayEnabled = true;
+      welcomeScreen.classList.add("hidden");
+    });
 
     [
       "fullscreenchange",
