@@ -81,11 +81,7 @@
       font-size: clamp(2rem, 9vw, 4rem);
       font-weight: 900;
       letter-spacing: 0.12em;
-      background: linear-gradient(
-        135deg,
-        var(--accent),
-        var(--accent2)
-      );
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
@@ -120,7 +116,7 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 760px;
+      max-width: 900px;
       min-height: 100vh;
       margin: 0 auto;
       padding-bottom: 40px;
@@ -158,11 +154,7 @@
       font-size: clamp(1.5rem, 5vw, 2.3rem);
       font-weight: 900;
       letter-spacing: 0.12em;
-      background: linear-gradient(
-        135deg,
-        var(--accent),
-        var(--accent2)
-      );
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
@@ -205,8 +197,6 @@
       height: 100%;
       border: 0;
     }
-
-    /* Fullscreen landscape player */
 
     #player-box:fullscreen {
       display: flex;
@@ -266,13 +256,60 @@
       text-transform: uppercase;
     }
 
-    /* Video list */
+    /* Video area and alphabet menu */
+
+    .video-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 48px;
+      gap: 16px;
+      align-items: start;
+    }
 
     #video-list {
       display: flex;
       flex-direction: column;
       gap: 9px;
+      min-width: 0;
     }
+
+    .alphabet-filter {
+      position: sticky;
+      top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 48px;
+    }
+
+    .alphabet-button {
+      width: 48px;
+      height: 30px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(17, 24, 39, 0.85);
+      color: var(--muted);
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.62rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .alphabet-button:hover,
+    .alphabet-button.active {
+      border-color: var(--accent);
+      background: rgba(0, 229, 255, 0.14);
+      color: var(--accent);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+    }
+
+    .alphabet-button.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* Video cards */
 
     .video-item {
       display: flex;
@@ -321,10 +358,6 @@
       text-overflow: ellipsis;
     }
 
-    /*
-      When there is no description, remove the title's bottom margin.
-      This keeps the top and bottom vertical padding equal.
-    */
     .video-item.no-description .video-title {
       margin-bottom: 0;
     }
@@ -366,6 +399,21 @@
         border-radius: 10px;
       }
 
+      .video-layout {
+        grid-template-columns: minmax(0, 1fr) 40px;
+        gap: 8px;
+      }
+
+      .alphabet-filter {
+        width: 40px;
+      }
+
+      .alphabet-button {
+        width: 40px;
+        height: 27px;
+        font-size: 0.55rem;
+      }
+
       .video-title {
         font-size: 0.76rem;
       }
@@ -382,7 +430,6 @@
 </head>
 
 <body>
-  <!-- Enter only enables video playback. It does not start a video. -->
   <div id="welcome-screen">
     <h1>NKT Movies</h1>
     <button id="enter-button" type="button">Enter</button>
@@ -405,16 +452,24 @@
 
       <h2 class="section-title">Available Videos</h2>
 
-      <div id="video-list"></div>
+      <div class="video-layout">
+        <div id="video-list"></div>
+
+        <nav
+          class="alphabet-filter"
+          id="alphabet-filter"
+          aria-label="Filter videos alphabetically"
+        ></nav>
+      </div>
     </main>
   </div>
 
   <script>
     /*
-      Add your YouTube videos here.
+      Add your videos here.
 
       The description is optional.
-      If you do not want a description, remove the description line.
+      The video title determines which alphabet letter it belongs to.
     */
 
     const videos = [
@@ -425,6 +480,7 @@
       },
       {
         title: "Tutorial",
+        description: "Step-by-step tutorial",
         youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_2"
       },
       {
@@ -433,8 +489,14 @@
         youtubeUrl: "https://youtu.be/VIDEO_ID_3"
       },
       {
-        title: "Video Without Description",
+        title: "Movie Night",
+        description: "Featured movie night video",
         youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_4"
+      },
+      {
+        title: "Adventure Film",
+        description: "An adventure movie",
+        youtubeUrl: "https://www.youtube.com/watch?v=VIDEO_ID_5"
       }
     ];
 
@@ -443,8 +505,11 @@
     const videoList = document.getElementById("video-list");
     const playerBox = document.getElementById("player-box");
     const nowPlaying = document.getElementById("now-playing");
+    const alphabetFilter = document.getElementById("alphabet-filter");
 
     let autoplayEnabled = false;
+    let selectedLetter = "ALL";
+    let validVideos = [];
 
     function getYouTubeVideoId(url) {
       try {
@@ -483,31 +548,124 @@
       }
     }
 
-    function renderVideos() {
-      videoList.innerHTML = "";
-
-      const validVideos = videos
+    function prepareVideos() {
+      validVideos = videos
         .map((video) => ({
           ...video,
           videoId: getYouTubeVideoId(video.youtubeUrl)
         }))
         .filter((video) => video.videoId);
+    }
 
-      if (validVideos.length === 0) {
+    function getVideoLetter(video) {
+      const title = (video.title || "").trim().toUpperCase();
+      const firstCharacter = title.charAt(0);
+
+      return /^[A-Z]$/.test(firstCharacter)
+        ? firstCharacter
+        : "#";
+    }
+
+    function renderAlphabetFilter() {
+      alphabetFilter.innerHTML = "";
+
+      const allButton = document.createElement("button");
+
+      allButton.type = "button";
+      allButton.className = "alphabet-button";
+      allButton.textContent = "ALL";
+
+      if (selectedLetter === "ALL") {
+        allButton.classList.add("active");
+      }
+
+      allButton.addEventListener("click", () => {
+        selectedLetter = "ALL";
+        renderAlphabetFilter();
+        renderVideos();
+      });
+
+      alphabetFilter.appendChild(allButton);
+
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+      letters.forEach((letter) => {
+        const button = document.createElement("button");
+        const hasVideos = validVideos.some(
+          (video) => getVideoLetter(video) === letter
+        );
+
+        button.type = "button";
+        button.className = "alphabet-button";
+        button.textContent = letter;
+
+        if (selectedLetter === letter) {
+          button.classList.add("active");
+        }
+
+        if (!hasVideos) {
+          button.classList.add("disabled");
+          button.disabled = true;
+        }
+
+        button.addEventListener("click", () => {
+          selectedLetter = letter;
+          renderAlphabetFilter();
+          renderVideos();
+        });
+
+        alphabetFilter.appendChild(button);
+      });
+
+      const hasNumberedVideos = validVideos.some(
+        (video) => getVideoLetter(video) === "#"
+      );
+
+      if (hasNumberedVideos) {
+        const numberButton = document.createElement("button");
+
+        numberButton.type = "button";
+        numberButton.className = "alphabet-button";
+        numberButton.textContent = "#";
+
+        if (selectedLetter === "#") {
+          numberButton.classList.add("active");
+        }
+
+        numberButton.addEventListener("click", () => {
+          selectedLetter = "#";
+          renderAlphabetFilter();
+          renderVideos();
+        });
+
+        alphabetFilter.appendChild(numberButton);
+      }
+    }
+
+    function renderVideos() {
+      videoList.innerHTML = "";
+
+      const filteredVideos =
+        selectedLetter === "ALL"
+          ? validVideos
+          : validVideos.filter(
+              (video) => getVideoLetter(video) === selectedLetter
+            );
+
+      if (filteredVideos.length === 0) {
         videoList.innerHTML = `
           <div class="empty-message">
-            No valid YouTube videos found.
+            No videos found for this letter.
           </div>
         `;
         return;
       }
 
-      validVideos.forEach((video, index) => {
+      filteredVideos.forEach((video) => {
         const item = document.createElement("button");
 
         item.className = "video-item";
         item.type = "button";
-        item.dataset.index = index;
 
         item.innerHTML = `
           <div class="video-info">
@@ -519,7 +677,8 @@
         `;
 
         const titleElement = item.querySelector(".video-title");
-        const descriptionElement = item.querySelector(".video-description");
+        const descriptionElement =
+          item.querySelector(".video-description");
 
         titleElement.textContent = video.title || "Untitled video";
 
@@ -530,23 +689,19 @@
 
         descriptionElement.textContent = description;
 
-        /*
-          Hide the description and remove the title bottom margin
-          when no description is provided.
-        */
         if (!description) {
           item.classList.add("no-description");
         }
 
         item.addEventListener("click", () => {
-          playVideo(video.videoId, video.title, index);
+          playVideo(video.videoId, video.title);
         });
 
         videoList.appendChild(item);
       });
     }
 
-    function playVideo(videoId, title, index) {
+    function playVideo(videoId, title) {
       if (!autoplayEnabled) {
         return;
       }
@@ -555,12 +710,14 @@
         item.classList.remove("playing");
       });
 
-      const selectedItem = document.querySelector(
-        `.video-item[data-index="${index}"]`
-      );
+      const clickedItem = [...document.querySelectorAll(".video-item")]
+        .find((item) => {
+          const titleElement = item.querySelector(".video-title");
+          return titleElement && titleElement.textContent === title;
+        });
 
-      if (selectedItem) {
-        selectedItem.classList.add("playing");
+      if (clickedItem) {
+        clickedItem.classList.add("playing");
       }
 
       playerBox.innerHTML = "";
@@ -587,10 +744,6 @@
 
       nowPlaying.classList.add("visible");
 
-      /*
-        The user clicked the video button.
-        This allows the browser to enter fullscreen.
-      */
       requestPlayerFullscreen();
     }
 
@@ -608,10 +761,6 @@
       try {
         await requestFullscreen.call(playerBox);
 
-        /*
-          Lock the phone to landscape mode.
-          This works on supported mobile browsers.
-        */
         if (
           screen.orientation &&
           screen.orientation.lock
@@ -642,10 +791,6 @@
         .getElementById("fs-bar")
         .classList.toggle("hidden", Boolean(isFullscreen));
 
-      /*
-        Unlock the screen when the user exits fullscreen.
-        This is supported only on some browsers.
-      */
       if (
         !isFullscreen &&
         screen.orientation &&
@@ -655,9 +800,6 @@
       }
     }
 
-    /*
-      Enter enables autoplay but does not play anything.
-    */
     enterButton.addEventListener("click", () => {
       autoplayEnabled = true;
       welcomeScreen.classList.add("hidden");
@@ -672,6 +814,8 @@
       document.addEventListener(eventName, handleFullscreenChange);
     });
 
+    prepareVideos();
+    renderAlphabetFilter();
     renderVideos();
   </script>
 </body>
