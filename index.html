@@ -14,7 +14,7 @@
       --text: #e8f0fe;
       --muted: #8b9bb5;
       --border: rgba(0, 229, 255, 0.18);
-      --glow: 0 0 30px rgba(0, 229, 255, 0.25);
+      --glow: 0 0 30px rgba(0, 229, 255, 0.35);
     }
 
     * {
@@ -23,8 +23,8 @@
 
     html,
     body {
-      margin: 0;
       min-height: 100%;
+      margin: 0;
       background: var(--background);
       color: var(--text);
       font-family: Arial, sans-serif;
@@ -51,15 +51,6 @@
           rgba(123, 97, 255, 0.06),
           transparent 60%
         );
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      border: 0;
     }
 
     #welcome-screen {
@@ -128,12 +119,14 @@
       min-height: 100vh;
       margin: 0 auto;
       padding-bottom: 40px;
+      overflow: visible;
     }
 
     #fs-bar {
       display: block;
       width: 100%;
       padding: 12px 20px;
+      border: 0;
       border-bottom: 1px solid var(--border);
       background: rgba(0, 229, 255, 0.035);
       color: var(--accent);
@@ -200,6 +193,76 @@
       background: #000;
     }
 
+    /*
+      Video fullscreen mode.
+
+      This makes the video fill the screen in landscape
+      when the browser/device supports orientation locking.
+    */
+    #player-box:fullscreen,
+    #player-box:-webkit-full-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      aspect-ratio: auto;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      background: #000;
+    }
+
+    #player-box:fullscreen iframe,
+    #player-box:fullscreen video,
+    #player-box:-webkit-full-screen iframe,
+    #player-box:-webkit-full-screen video {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      max-width: 100vw;
+      max-height: 100vh;
+      border: 0;
+      object-fit: contain;
+    }
+
+    /*
+      Website fullscreen mode remains vertically scrollable.
+    */
+    #website-page:fullscreen {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0 0 40px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: var(--background);
+    }
+
+    #website-page:-webkit-full-screen {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0 0 40px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: var(--background);
+    }
+
+    html:has(#website-page:fullscreen),
+    body:has(#website-page:fullscreen),
+    html:has(#website-page:-webkit-full-screen),
+    body:has(#website-page:-webkit-full-screen) {
+      overflow: hidden;
+    }
+
     #now-playing {
       display: none;
       margin: 0 0 14px;
@@ -256,9 +319,8 @@
       display: flex;
       align-items: center;
       width: 100%;
-      min-height: 88px;
       gap: 12px;
-      padding: 12px;
+      padding: 14px;
       border: 1px solid var(--border);
       border-radius: 10px;
       background: var(--card);
@@ -278,39 +340,6 @@
     .video-item.playing {
       border-color: var(--accent);
       box-shadow: 0 0 20px rgba(0, 229, 255, 0.16);
-    }
-
-    .thumbnail {
-      position: relative;
-      flex: 0 0 120px;
-      width: 120px;
-      height: 68px;
-      overflow: hidden;
-      border-radius: 7px;
-      background: #000;
-    }
-
-    .thumbnail img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .thumbnail::after {
-      content: "▶";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      display: grid;
-      width: 34px;
-      height: 34px;
-      place-items: center;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.72);
-      color: white;
-      font-size: 13px;
-      transform: translate(-50%, -50%);
     }
 
     .video-info {
@@ -337,11 +366,19 @@
       white-space: nowrap;
     }
 
+    .video-item.no-description .video-title {
+      margin-bottom: 0;
+    }
+
+    .video-item.no-description .video-description {
+      display: none;
+    }
+
     .open-icon {
       flex: 0 0 auto;
       color: var(--accent);
       font-size: 1.3rem;
-      opacity: 0.8;
+      opacity: 0.75;
     }
 
     .empty-message {
@@ -357,12 +394,6 @@
         padding: 20px 12px;
       }
 
-      .thumbnail {
-        flex-basis: 100px;
-        width: 100px;
-        height: 58px;
-      }
-
       .video-title {
         font-size: 0.82rem;
       }
@@ -370,39 +401,6 @@
       .video-description {
         font-size: 0.7rem;
       }
-    }
-
-    #website-page:fullscreen,
-    #website-page:-webkit-full-screen {
-      width: 100vw;
-      min-height: 100vh;
-      overflow-y: auto;
-      background: var(--background);
-    }
-
-    #player-box:fullscreen,
-    #player-box:-webkit-full-screen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100vw;
-      height: 100vh;
-      max-width: none;
-      max-height: none;
-      aspect-ratio: auto;
-      margin: 0;
-      border: 0;
-      border-radius: 0;
-      background: #000;
-    }
-
-    #player-box:fullscreen iframe,
-    #player-box:fullscreen video,
-    #player-box:-webkit-full-screen iframe,
-    #player-box:-webkit-full-screen video {
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
     }
   </style>
 </head>
@@ -441,11 +439,12 @@
           type="search"
           placeholder="Search by title, description or tags..."
           aria-label="Search videos"
-          autocomplete="off"
         >
       </div>
 
-      <h2 class="section-title">Available Movies</h2>
+      <h2 class="section-title">
+        Available Movies
+      </h2>
 
       <div id="video-list"></div>
     </main>
@@ -457,7 +456,7 @@
         title: "Deewane Huye Paagal",
         description: "2005",
         tags: "Comedy, Akshay Kumar, Shahid Kapoor, Suniel Shetty, Paresh Rawal, Asrani",
-        url: "https://youtu.be/pFmcQSemA6U?t=5"
+        url: "https://youtu.be/pfmcQSemA6U?t=5"
       },
       {
         title: "Desi Boyz",
@@ -469,7 +468,7 @@
         title: "Housefull",
         description: "2010",
         tags: "Comedy, Akshay Kumar, Riteish Deshmukh, Arjun Rampal, Deepika Padukone",
-        url: "https://www.youtube.com/watch?v=IFv0IWLWBk"
+        url: "https://www.youtube.com/watch?v=IFv0IW1LWBk"
       },
       {
         title: "Housefull 2",
@@ -493,7 +492,7 @@
         title: "De Dana Dan",
         description: "2009",
         tags: "Akshay Kumar, Katrina Kaif, Suniel Shetty, Sameera Reddy, Johny Lever, comedy",
-        url: "https://www.youtube.com/watch?v=mWfy26ijSWY"
+        url: "https://www.youtube.com/watch?v=mWfy26ijSwY"
       },
       {
         title: "Welcome",
@@ -505,7 +504,7 @@
         title: "Paathshaala",
         description: "2010",
         tags: "Drama, Nana Patekar, Shahid Kapoor, Ayesha Takia, Sushant Singh, Saurabh Shukla",
-        url: "https://www.youtube.com/watch?v=7n1A-rDw6sw"
+        url: "https://www.youtube.com/watch?v=7nlA-rDw6sw"
       },
       {
         title: "Mujhse Shaadi Karogi",
@@ -527,33 +526,63 @@
       }
     ];
 
-    const welcomeScreen = document.getElementById("welcome-screen");
-    const enterButton = document.getElementById("enter-button");
-    const websitePage = document.getElementById("website-page");
-    const fullscreenBar = document.getElementById("fs-bar");
-    const videoList = document.getElementById("video-list");
-    const playerBox = document.getElementById("player-box");
-    const nowPlaying = document.getElementById("now-playing");
-    const searchInput = document.getElementById("search-input");
+    const welcomeScreen =
+      document.getElementById("welcome-screen");
+
+    const enterButton =
+      document.getElementById("enter-button");
+
+    const websitePage =
+      document.getElementById("website-page");
+
+    const fullscreenBar =
+      document.getElementById("fs-bar");
+
+    const videoList =
+      document.getElementById("video-list");
+
+    const playerBox =
+      document.getElementById("player-box");
+
+    const nowPlaying =
+      document.getElementById("now-playing");
+
+    const searchInput =
+      document.getElementById("search-input");
 
     let autoplayEnabled = false;
 
-    function getYouTubeInfo(url) {
+    function getYouTubeVideoInfo(url) {
       try {
         const parsedUrl = new URL(url);
-        const host = parsedUrl.hostname.toLowerCase();
-        const path = parsedUrl.pathname;
+        const hostname = parsedUrl.hostname.toLowerCase();
+        const pathname = parsedUrl.pathname;
 
-        let videoId = "";
+        let videoId = null;
 
-        if (host === "youtu.be") {
-          videoId = path.substring(1).split("/")[0];
-        } else if (host.includes("youtube.com") && path === "/watch") {
-          videoId = parsedUrl.searchParams.get("v") || "";
-        } else if (host.includes("youtube.com") && path.startsWith("/shorts/")) {
-          videoId = path.split("/shorts/")[1].split("/")[0];
-        } else if (host.includes("youtube.com") && path.startsWith("/embed/")) {
-          videoId = path.split("/embed/")[1].split("/")[0];
+        if (hostname === "youtu.be") {
+          videoId = pathname.substring(1).split("/")[0];
+        }
+
+        if (
+          hostname.includes("youtube.com") &&
+          pathname === "/watch"
+        ) {
+          videoId = parsedUrl.searchParams.get("v");
+        }
+
+        if (
+          hostname.includes("youtube.com") &&
+          pathname.startsWith("/shorts/")
+        ) {
+          videoId = pathname.split("/shorts/")[1].split("/")[0];
+        }
+
+        if (
+          hostname.includes("youtube.com") &&
+          pathname.startsWith("/embed/")
+        ) {
+          videoId = pathname.split("/embed/")[1].split("/")[0];
         }
 
         if (!videoId) {
@@ -561,6 +590,7 @@
         }
 
         let startTime = 0;
+
         const timestamp =
           parsedUrl.searchParams.get("t") ||
           parsedUrl.searchParams.get("start");
@@ -588,7 +618,7 @@
           videoId,
           startTime
         };
-      } catch {
+      } catch (error) {
         return null;
       }
     }
@@ -598,141 +628,167 @@
     }
 
     function clearPlayingStates() {
-      document.querySelectorAll(".video-item").forEach(item => {
-        item.classList.remove("playing");
-      });
+      document
+        .querySelectorAll(".video-item")
+        .forEach((item) => {
+          item.classList.remove("playing");
+        });
     }
 
     function showNowPlaying(title) {
-      nowPlaying.textContent = "▶ NOW PLAYING: " + title;
+      nowPlaying.textContent =
+        "▶ NOW PLAYING: " + (title || "Untitled video");
+
       nowPlaying.classList.add("visible");
     }
 
-    function stopCurrentVideo() {
-      playerBox.innerHTML = "";
-      playerBox.classList.remove("active");
+    async function lockLandscape() {
+      try {
+        if (
+          screen.orientation &&
+          screen.orientation.lock
+        ) {
+          await screen.orientation.lock("landscape");
+        }
+      } catch (error) {
+        /*
+          Some browsers do not allow orientation locking.
+          Fullscreen playback still works normally there.
+        */
+        console.log(
+          "Landscape orientation lock is not supported."
+        );
+      }
     }
 
-    function playYouTubeVideo(video, selectedItem, youtubeInfo) {
-      clearPlayingStates();
-      selectedItem.classList.add("playing");
-      stopCurrentVideo();
+    async function requestPlayerFullscreen() {
+      const requestFullscreen =
+        playerBox.requestFullscreen ||
+        playerBox.webkitRequestFullscreen ||
+        playerBox.mozRequestFullScreen ||
+        playerBox.msRequestFullscreen;
 
-      const params = new URLSearchParams({
-        rel: "0",
-        playsinline: "1",
-        modestbranding: "1",
-        enablejsapi: "1"
-      });
-
-      if (youtubeInfo.startTime > 0) {
-        params.set("start", Math.floor(youtubeInfo.startTime));
+      if (!requestFullscreen) {
+        return;
       }
 
-      const iframe = document.createElement("iframe");
+      try {
+        await requestFullscreen.call(playerBox);
 
-      iframe.src =
-        "https://www.youtube-nocookie.com/embed/" +
+        /*
+          Run this after fullscreen starts.
+          This is required by many mobile browsers.
+        */
+        await lockLandscape();
+      } catch (error) {
+        console.log(
+          "Video fullscreen was not allowed by the browser."
+        );
+      }
+    }
+
+    function playYouTubeVideo(
+      video,
+      selectedItem,
+      youtubeInfo
+    ) {
+      clearPlayingStates();
+      selectedItem.classList.add("playing");
+
+      playerBox.innerHTML = "";
+
+      let embedUrl =
+        "https://www.youtube.com/embed/" +
         encodeURIComponent(youtubeInfo.videoId) +
-        "?" +
-        params.toString();
+        "?autoplay=1&rel=0&playsinline=1";
 
+      if (youtubeInfo.startTime > 0) {
+        embedUrl +=
+          "&start=" +
+          Math.floor(youtubeInfo.startTime);
+      }
+
+      const iframe =
+        document.createElement("iframe");
+
+      iframe.src = embedUrl;
       iframe.title = video.title || "Video player";
-      iframe.loading = "eager";
-      iframe.referrerPolicy = "strict-origin-when-cross-origin";
+
       iframe.allow =
-        "accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        "accelerometer; autoplay; clipboard-write; " +
+        "encrypted-media; gyroscope; picture-in-picture; " +
+        "web-share";
+
       iframe.allowFullscreen = true;
 
       playerBox.appendChild(iframe);
       playerBox.classList.add("active");
+
       showNowPlaying(video.title);
 
-      playerBox.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+      requestPlayerFullscreen();
     }
 
     function playDirectVideo(video, selectedItem) {
       clearPlayingStates();
       selectedItem.classList.add("playing");
-      stopCurrentVideo();
 
-      const videoElement = document.createElement("video");
+      playerBox.innerHTML = "";
+
+      const videoElement =
+        document.createElement("video");
 
       videoElement.src = video.url;
       videoElement.controls = true;
-      videoElement.playsInline = true;
-      videoElement.preload = "metadata";
       videoElement.autoplay = true;
+      videoElement.playsInline = true;
 
       playerBox.appendChild(videoElement);
       playerBox.classList.add("active");
+
       showNowPlaying(video.title);
 
-      videoElement.play().catch(() => {
-        // The browser may require the user to press the play button.
-      });
-
-      playerBox.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+      requestPlayerFullscreen();
     }
 
     function playVideo(video, selectedItem) {
-      const youtubeInfo = getYouTubeInfo(video.url);
+      if (!autoplayEnabled) {
+        return;
+      }
+
+      const youtubeInfo =
+        getYouTubeVideoInfo(video.url);
 
       if (youtubeInfo) {
-        playYouTubeVideo(video, selectedItem, youtubeInfo);
+        playYouTubeVideo(
+          video,
+          selectedItem,
+          youtubeInfo
+        );
+
         return;
       }
 
       if (isDirectVideoFile(video.url)) {
         playDirectVideo(video, selectedItem);
+
         return;
       }
 
-      window.open(video.url, "_blank", "noopener,noreferrer");
-    }
-
-    function createThumbnail(video) {
-      const youtubeInfo = getYouTubeInfo(video.url);
-
-      if (!youtubeInfo) {
-        return "";
-      }
-
-      const thumbnail = document.createElement("div");
-      thumbnail.className = "thumbnail";
-
-      const image = document.createElement("img");
-      image.src =
-        "https://i.ytimg.com/vi/" +
-        encodeURIComponent(youtubeInfo.videoId) +
-        "/mqdefault.jpg";
-      image.alt = "";
-      image.loading = "lazy";
-      image.decoding = "async";
-
-      image.onerror = () => {
-        image.src =
-          "https://i.ytimg.com/vi/" +
-          encodeURIComponent(youtubeInfo.videoId) +
-          "/hqdefault.jpg";
-      };
-
-      thumbnail.appendChild(image);
-      return thumbnail;
+      window.open(
+        video.url,
+        "_blank",
+        "noopener,noreferrer"
+      );
     }
 
     function renderVideos() {
       videoList.innerHTML = "";
 
-      const searchTerm = searchInput.value.trim().toLowerCase();
+      const searchTerm =
+        searchInput.value.trim().toLowerCase();
 
-      const filteredVideos = videos.filter(video => {
+      const filteredVideos = videos.filter((video) => {
         const searchableText = [
           video.title || "",
           video.description || "",
@@ -742,47 +798,62 @@
           .join(" ")
           .toLowerCase();
 
-        return !searchTerm || searchableText.includes(searchTerm);
+        return (
+          searchTerm === "" ||
+          searchableText.includes(searchTerm)
+        );
       });
 
       if (filteredVideos.length === 0) {
-        videoList.innerHTML =
-          '<div class="empty-message">No videos match your search.</div>';
+        videoList.innerHTML = `
+          <div class="empty-message">
+            No videos match your search.
+          </div>
+        `;
+
         return;
       }
 
-      const fragment = document.createDocumentFragment();
+      filteredVideos.forEach((video) => {
+        const item =
+          document.createElement("button");
 
-      filteredVideos.forEach(video => {
-        const item = document.createElement("button");
         item.type = "button";
         item.className = "video-item";
 
-        const thumbnail = createThumbnail(video);
+        const info =
+          document.createElement("div");
 
-        if (thumbnail) {
-          item.appendChild(thumbnail);
-        }
-
-        const info = document.createElement("div");
         info.className = "video-info";
 
-        const title = document.createElement("h3");
-        title.className = "video-title";
-        title.textContent = video.title || "Untitled video";
+        const title =
+          document.createElement("h3");
 
-        const description = document.createElement("p");
-        description.className = "video-description";
-        description.textContent = video.description || "";
+        title.className = "video-title";
+        title.textContent =
+          video.title || "Untitled video";
+
+        const description =
+          document.createElement("p");
+
+        description.className =
+          "video-description";
+
+        description.textContent =
+          video.description || "";
 
         info.appendChild(title);
         info.appendChild(description);
 
-        const icon = document.createElement("span");
+        const icon =
+          document.createElement("span");
+
         icon.className = "open-icon";
         icon.setAttribute("aria-hidden", "true");
 
-        if (getYouTubeInfo(video.url) || isDirectVideoFile(video.url)) {
+        if (getYouTubeVideoInfo(video.url)) {
+          icon.textContent = "▶";
+        } else if (isDirectVideoFile(video.url)) {
           icon.textContent = "▶";
         } else {
           icon.textContent = "↗";
@@ -791,33 +862,49 @@
         item.appendChild(info);
         item.appendChild(icon);
 
+        if (
+          !video.description ||
+          video.description.trim() === ""
+        ) {
+          item.classList.add("no-description");
+        }
+
         item.addEventListener("click", () => {
           playVideo(video, item);
         });
 
-        fragment.appendChild(item);
+        videoList.appendChild(item);
       });
-
-      videoList.appendChild(fragment);
     }
 
     async function toggleWebsiteFullscreen() {
       const fullscreenElement =
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
         document.msFullscreenElement;
 
       const exitFullscreen =
         document.exitFullscreen ||
         document.webkitExitFullscreen ||
+        document.mozCancelFullScreen ||
         document.msExitFullscreen;
 
       if (fullscreenElement) {
         if (exitFullscreen) {
           try {
             await exitFullscreen.call(document);
-          } catch {
-            // Ignore fullscreen errors.
+
+            if (
+              screen.orientation &&
+              screen.orientation.unlock
+            ) {
+              screen.orientation.unlock();
+            }
+          } catch (error) {
+            console.log(
+              "Could not exit fullscreen mode."
+            );
           }
         }
 
@@ -831,14 +918,19 @@
         websitePage.msRequestFullscreen;
 
       if (!requestFullscreen) {
-        alert("Fullscreen mode is not supported by this browser.");
+        alert(
+          "Fullscreen mode is not supported by this browser."
+        );
+
         return;
       }
 
       try {
         await requestFullscreen.call(websitePage);
-      } catch {
-        // Ignore fullscreen errors.
+      } catch (error) {
+        console.log(
+          "Website fullscreen was not allowed by the browser."
+        );
       }
     }
 
@@ -849,7 +941,8 @@
         document.mozFullScreenElement ||
         document.msFullscreenElement;
 
-      const websiteIsFullscreen = fullscreenElement === websitePage;
+      const websiteIsFullscreen =
+        fullscreenElement === websitePage;
 
       fullscreenBar.classList.toggle(
         "hidden",
@@ -857,33 +950,51 @@
       );
 
       if (websiteIsFullscreen) {
-        document.documentElement.style.overflow = "hidden";
-        document.body.style.overflow = "hidden";
-        websitePage.style.overflowY = "auto";
+        document.documentElement.style.overflow =
+          "hidden";
+
+        document.body.style.overflow =
+          "hidden";
+
+        websitePage.style.overflowY =
+          "auto";
       } else {
-        document.documentElement.style.overflow = "";
-        document.body.style.overflow = "";
-        websitePage.style.overflowY = "";
+        document.documentElement.style.overflow =
+          "";
+
+        document.body.style.overflow =
+          "";
+
+        websitePage.style.overflowY =
+          "";
       }
     }
 
     enterButton.addEventListener("click", () => {
       autoplayEnabled = true;
       welcomeScreen.classList.add("hidden");
-      searchInput.focus();
     });
 
-    fullscreenBar.addEventListener("click", toggleWebsiteFullscreen);
+    fullscreenBar.addEventListener(
+      "click",
+      toggleWebsiteFullscreen
+    );
 
-    searchInput.addEventListener("input", renderVideos);
+    searchInput.addEventListener(
+      "input",
+      renderVideos
+    );
 
     [
       "fullscreenchange",
       "webkitfullscreenchange",
       "mozfullscreenchange",
       "MSFullscreenChange"
-    ].forEach(eventName => {
-      document.addEventListener(eventName, handleFullscreenChange);
+    ].forEach((eventName) => {
+      document.addEventListener(
+        eventName,
+        handleFullscreenChange
+      );
     });
 
     renderVideos();
