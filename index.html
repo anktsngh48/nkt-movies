@@ -1,25 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>NKT Movies</title>
 
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Sora:wght@400;500;600&display=swap");
-
     :root {
-      --bg: #05080f;
+      --background: #05080f;
       --card: #111827;
+      --card-hover: #172237;
       --accent: #00e5ff;
-      --accent2: #7b61ff;
+      --accent-two: #7b61ff;
       --text: #e8f0fe;
-      --muted: #5a6a82;
-      --border: rgba(0, 229, 255, 0.12);
+      --muted: #8b9bb5;
+      --border: rgba(0, 229, 255, 0.18);
       --glow: 0 0 30px rgba(0, 229, 255, 0.35);
     }
 
@@ -31,14 +27,13 @@
     body {
       min-height: 100%;
       margin: 0;
-      background: var(--bg);
+      background: var(--background);
       color: var(--text);
-      font-family: "Sora", sans-serif;
-      overflow-x: hidden;
+      font-family: Arial, sans-serif;
     }
 
     body {
-      position: relative;
+      overflow-x: hidden;
     }
 
     body::before {
@@ -60,7 +55,6 @@
         );
     }
 
-    /* Welcome screen */
     #welcome-screen {
       position: fixed;
       inset: 0;
@@ -71,7 +65,7 @@
       justify-content: center;
       gap: 26px;
       padding: 24px;
-      background: var(--bg);
+      background: var(--background);
       text-align: center;
     }
 
@@ -79,21 +73,16 @@
       display: none;
     }
 
-    #welcome-screen h1 {
+    #welcome-screen h1,
+    header h1 {
       margin: 0;
-      font-family: "Orbitron", sans-serif;
-      font-size: clamp(2rem, 9vw, 4rem);
-      font-weight: 900;
+      color: var(--accent);
       letter-spacing: 0.12em;
-      background: linear-gradient(
-        135deg,
-        var(--accent),
-        var(--accent2)
-      );
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.4));
+      text-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
+    }
+
+    #welcome-screen h1 {
+      font-size: clamp(2rem, 9vw, 4rem);
     }
 
     #enter-button {
@@ -102,20 +91,17 @@
       border-radius: 8px;
       background: rgba(0, 229, 255, 0.08);
       color: var(--accent);
-      font-family: "Orbitron", sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
+      font-size: 0.95rem;
+      font-weight: bold;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       cursor: pointer;
       box-shadow: 0 0 25px rgba(0, 229, 255, 0.18);
-      transition: 0.2s ease;
     }
 
     #enter-button:hover {
       background: rgba(0, 229, 255, 0.2);
       box-shadow: 0 0 35px rgba(0, 229, 255, 0.4);
-      transform: translateY(-2px);
     }
 
     .browser-note {
@@ -124,12 +110,9 @@
       bottom: 24px;
       left: 20px;
       color: var(--muted);
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-align: center;
+      font-size: 0.75rem;
     }
 
-    /* Main page */
     .page {
       position: relative;
       z-index: 1;
@@ -138,34 +121,22 @@
       min-height: 100vh;
       margin: 0 auto;
       padding-bottom: 40px;
-      background: var(--bg);
-    }
-
-    .page.fullscreen,
-    .page:-webkit-full-screen {
-      width: 100vw;
-      max-width: none;
-      min-height: 100vh;
-      overflow-y: auto;
-      background: var(--bg);
     }
 
     #fs-bar {
       display: block;
       width: 100%;
-      padding: 10px 20px;
+      padding: 12px 20px;
       border: 0;
-      border-bottom: 1px solid rgba(0, 229, 255, 0.09);
+      border-bottom: 1px solid var(--border);
       background: rgba(0, 229, 255, 0.035);
       color: var(--accent);
-      font-family: "Orbitron", sans-serif;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.22em;
+      font-size: 0.7rem;
+      font-weight: bold;
+      letter-spacing: 0.2em;
       text-align: center;
       text-transform: uppercase;
       cursor: pointer;
-      user-select: none;
     }
 
     #fs-bar:hover {
@@ -178,32 +149,19 @@
 
     header {
       padding: 26px 20px 22px;
-      border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+      border-bottom: 1px solid var(--border);
       text-align: center;
     }
 
     header h1 {
-      margin: 0;
-      font-family: "Orbitron", sans-serif;
       font-size: clamp(1.5rem, 5vw, 2.3rem);
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      background: linear-gradient(
-        135deg,
-        var(--accent),
-        var(--accent2)
-      );
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.4));
     }
 
     header p {
       margin: 8px 0 0;
       color: var(--muted);
-      font-size: 0.72rem;
-      letter-spacing: 0.2em;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
@@ -215,45 +173,44 @@
       display: none;
       width: 100%;
       aspect-ratio: 16 / 9;
-      margin-bottom: 22px;
+      margin-bottom: 14px;
       overflow: hidden;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: #000;
-      box-shadow:
-        0 0 50px rgba(0, 229, 255, 0.13),
-        0 0 100px rgba(123, 97, 255, 0.09);
+      box-shadow: var(--glow);
     }
 
     #player-box.active {
       display: block;
     }
 
-    #player-box iframe {
+    #player-box iframe,
+    #player-box video {
       display: block;
       width: 100%;
       height: 100%;
       border: 0;
+      background: #000;
     }
 
-    #player-box:fullscreen,
-    #player-box:-webkit-full-screen {
+    #player-box:fullscreen {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100vw;
       height: 100vh;
+      max-width: none;
       aspect-ratio: auto;
       margin: 0;
       border: 0;
       border-radius: 0;
-      background: #000;
     }
 
     #player-box:fullscreen iframe,
-    #player-box:-webkit-full-screen iframe {
-      width: 100vw;
-      height: 56.25vw;
+    #player-box:fullscreen video {
+      width: 100%;
+      height: 100%;
       max-height: 100vh;
     }
 
@@ -262,9 +219,9 @@
       margin: 0 0 14px;
       overflow: hidden;
       color: var(--accent);
-      font-size: 0.78rem;
-      white-space: nowrap;
+      font-size: 0.8rem;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     #now-playing.visible {
@@ -283,9 +240,7 @@
       outline: none;
       background: var(--card);
       color: var(--text);
-      font-family: "Sora", sans-serif;
-      font-size: 0.78rem;
-      transition: 0.2s ease;
+      font-size: 0.9rem;
     }
 
     #search-input::placeholder {
@@ -300,7 +255,6 @@
     .section-title {
       margin: 0 0 12px;
       color: var(--text);
-      font-family: "Orbitron", sans-serif;
       font-size: 0.85rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -329,7 +283,7 @@
 
     .video-item:hover {
       border-color: rgba(0, 229, 255, 0.45);
-      background: #172237;
+      background: var(--card-hover);
       box-shadow: var(--glow);
       transform: translateY(-1px);
     }
@@ -346,22 +300,21 @@
 
     .video-title {
       margin: 0 0 5px;
-      color: var(--text);
-      font-size: 0.84rem;
-      font-weight: 600;
-      line-height: 1.3;
       overflow: hidden;
-      white-space: nowrap;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: bold;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .video-description {
       margin: 0;
-      color: var(--muted);
-      font-size: 0.7rem;
       overflow: hidden;
-      white-space: nowrap;
+      color: var(--muted);
+      font-size: 0.75rem;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .video-item.no-description .video-title {
@@ -375,8 +328,8 @@
     .open-icon {
       flex: 0 0 auto;
       color: var(--accent);
-      font-size: 1.35rem;
-      opacity: 0.5;
+      font-size: 1.3rem;
+      opacity: 0.75;
     }
 
     .empty-message {
@@ -392,20 +345,12 @@
         padding: 20px 12px;
       }
 
-      #player-box {
-        border-radius: 10px;
-      }
-
       .video-title {
-        font-size: 0.76rem;
+        font-size: 0.82rem;
       }
 
       .video-description {
-        font-size: 0.65rem;
-      }
-
-      .open-icon {
-        display: none;
+        font-size: 0.7rem;
       }
     }
   </style>
@@ -420,7 +365,7 @@
     </button>
 
     <div class="browser-note">
-      Works best on Brave Browser
+      Works best in a modern browser
     </div>
   </div>
 
@@ -445,7 +390,7 @@
           type="search"
           placeholder="Search by title, description or tags..."
           aria-label="Search videos"
-        />
+        >
       </div>
 
       <h2 class="section-title">Available Movies</h2>
@@ -456,101 +401,87 @@
 
   <script>
     /*
-      Add your videos here.
+      Add or edit movies here.
 
-      Timestamp links are supported, including:
-      https://youtu.be/3HoiKIM97CA?t=8
-      https://youtu.be/3HoiKIM97CA?t=1m20s
-      https://www.youtube.com/watch?v=3HoiKIM97CA&start=45
+      YouTube links:
+      - https://www.youtube.com/watch?v=VIDEO_ID
+      - https://youtu.be/VIDEO_ID
+      - https://youtu.be/VIDEO_ID?t=8
+
+      Other links:
+      - Normal website links open in a new tab.
+      - Direct .mp4, .webm, or .ogg files play inside the page.
     */
 
     const videos = [
-       {
+      {
         title: "Deewane Huye Paagal",
         description: "2005",
-        tags: "Akshay Kumar, Shahid Kapoor, Sunil Suniel Shetty, Paresh Rawal, Asrani,",
-        youtubeUrl: "https://www.youtube.com/watch?v=pfmcQSemA6U"
+        tags: "Akshay Kumar, Shahid Kapoor, Suniel Shetty, Paresh Rawal, Asrani",
+        url: "https://www.youtube.com/watch?v=pfmcQSemA6U"
       },
+
       {
         title: "Desi Boyz",
         description: "2011",
         tags: "John Abraham, Akshay Kumar, Deepika Padukone",
-        youtubeUrl: "https://www.youtube.com/watch?v=0VBZi5UH8fw"
+        url: "https://www.youtube.com/watch?v=0VBZi5UH8Fw"
       },
+
       {
         title: "Housefull",
         description: "2010",
         tags: "Akshay Kumar, Riteish Deshmukh, Arjun Rampal, Deepika Padukone",
-        youtubeUrl: "https://www.youtube.com/watch?v=IFv0IW1LWBk"
+        url: "https://www.youtube.com/watch?v=IFv0IW1LWBk"
       },
+
       {
         title: "Housefull 2",
         description: "2012",
-        tags: "Akshay Kumar, Riteish Deshmukh, Arjun Rampal, Jacqueline Fernandez, Zareen Khan, Shreyas Talpade, Asin, Shreyas Talpade, Rishi Kapoor",
-        youtubeUrl: "https://youtu.be/3HoiKIM97CA?t=8"
+        tags: "Akshay Kumar, Riteish Deshmukh, Arjun Rampal, Jacqueline Fernandez, Zareen Khan",
+        url: "https://youtu.be/3HoiKIM97CA?t=8"
       },
+
       {
         title: "Housefull 3",
         description: "2016",
-        tags: "Akshay Kumar, Abhishek Bachchan, Riteish Deshmukh, Jackie Shroff, Jacqueline Fernandez, Nargis Fkhri, Lisa Haydon, Boman Irani",
-        youtubeUrl: "https://www.youtube.com/watch?v=UMe0mz7kRr0"
+        tags: "Akshay Kumar, Abhishek Bachchan, Riteish Deshmukh, Jackie Shroff, Jacqueline Fernandez",
+        url: "https://www.youtube.com/watch?v=UMe0mz7kRr0"
       },
+
       {
         title: "Heyy Babyy",
         description: "2007",
-        tags: "Akshay Kumar, Fardeen Khan, Riteish Deshmukh, Vidya Balan, Boman Irani, Shah Rukh Khan, Anupam Kher, Celina Jaitly, Malaika Arora, Amrita Rao, Minissha Lamba, Tara Sharma, Neha Dhupia", 
-        youtubeUrl: "https://youtu.be/YChJqBJmFgQ?t=8"
+        tags: "Akshay Kumar, Fardeen Khan, Riteish Deshmukh, Vidya Balan, Boman Irani",
+        url: "https://youtu.be/YChJqB3mFgQ?t=8"
       },
+
       {
         title: "Welcome",
         description: "2007",
-        tags: "Akshay Kumar, Katrina Kaif, Nana Patekar, Anil Kapoor, Paresh Rawal, Supriya Karnik, Feroz Khan, Mallika Sherawat, Sanjay Mishra, Govardhan Asrani, Ranjeet Bedi, Malaika Arora, Paresh Ganatra",
-        youtubeUrl: "https://youtu.be/AKiynoClCaA?t=8"
+        tags: "Akshay Kumar, Katrina Kaif, Nana Patekar, Anil Kapoor, Paresh Rawal",
+        url: "https://youtu.be/AKiynoC1CaA?t=8"
       },
+
       {
         title: "Chumbak",
         description: "2026",
         tags: "",
-        youtubeUrl: "https://nexdrive.bet/genxfm21657873140/"
+        url: "https://nexdrive.bet/genxfm21657873140/"
       }
     ];
 
-    const welcomeScreen =
-      document.getElementById("welcome-screen");
-
-    const enterButton =
-      document.getElementById("enter-button");
-
-    const websitePage =
-      document.getElementById("website-page");
-
-    const fullscreenBar =
-      document.getElementById("fs-bar");
-
-    const videoList =
-      document.getElementById("video-list");
-
-    const playerBox =
-      document.getElementById("player-box");
-
-    const nowPlaying =
-      document.getElementById("now-playing");
-
-    const searchInput =
-      document.getElementById("search-input");
+    const welcomeScreen = document.getElementById("welcome-screen");
+    const enterButton = document.getElementById("enter-button");
+    const websitePage = document.getElementById("website-page");
+    const fullscreenBar = document.getElementById("fs-bar");
+    const videoList = document.getElementById("video-list");
+    const playerBox = document.getElementById("player-box");
+    const nowPlaying = document.getElementById("now-playing");
+    const searchInput = document.getElementById("search-input");
 
     let autoplayEnabled = false;
 
-    /*
-      Extracts both the YouTube video ID and timestamp.
-
-      Supported timestamp formats:
-      ?t=8
-      ?t=45s
-      ?t=1m20s
-      ?t=1h2m10s
-      ?start=8
-    */
     function getYouTubeVideoInfo(url) {
       try {
         const parsedUrl = new URL(url);
@@ -574,16 +505,14 @@
           hostname.includes("youtube.com") &&
           pathname.startsWith("/shorts/")
         ) {
-          videoId =
-            pathname.split("/shorts/")[1].split("/")[0];
+          videoId = pathname.split("/shorts/")[1].split("/")[0];
         }
 
         if (
           hostname.includes("youtube.com") &&
           pathname.startsWith("/embed/")
         ) {
-          videoId =
-            pathname.split("/embed/")[1].split("/")[0];
+          videoId = pathname.split("/embed/")[1].split("/")[0];
         }
 
         if (!videoId) {
@@ -616,167 +545,182 @@
         }
 
         return {
-          videoId,
-          startTime
+          videoId: videoId,
+          startTime: startTime
         };
       } catch {
         return null;
       }
     }
 
-    function renderVideos() {
-      videoList.innerHTML = "";
-
-      const searchTerm =
-        searchInput.value.trim().toLowerCase();
-
-      const validVideos = videos
-        .map((video) => {
-          const videoInfo = getYouTubeVideoInfo(
-            video.youtubeUrl
-          );
-
-          return {
-            ...video,
-            videoId: videoInfo
-              ? videoInfo.videoId
-              : null,
-            startTime: videoInfo
-              ? videoInfo.startTime
-              : 0
-          };
-        })
-        .filter((video) => video.videoId)
-        .filter((video) => {
-          if (!searchTerm) {
-            return true;
-          }
-
-          const searchableText = [
-            video.title || "",
-            video.description || "",
-            video.tags || ""
-          ]
-            .join(" ")
-            .toLowerCase();
-
-          return searchableText.includes(searchTerm);
-        });
-
-      if (validVideos.length === 0) {
-        videoList.innerHTML = `
-          <div class="empty-message">
-            ${
-              searchTerm
-                ? "No videos match your search."
-                : "No valid YouTube videos found."
-            }
-          </div>
-        `;
-
-        return;
-      }
-
-      validVideos.forEach((video) => {
-        const item = document.createElement("button");
-
-        item.className = "video-item";
-        item.type = "button";
-
-        item.innerHTML = `
-          <div class="video-info">
-            <h3 class="video-title"></h3>
-            <p class="video-description"></p>
-          </div>
-          <span class="open-icon" aria-hidden="true">›</span>
-        `;
-
-        const titleElement =
-          item.querySelector(".video-title");
-
-        const descriptionElement =
-          item.querySelector(".video-description");
-
-        titleElement.textContent =
-          video.title || "Untitled video";
-
-        const description =
-          typeof video.description === "string"
-            ? video.description.trim()
-            : "";
-
-        descriptionElement.textContent = description;
-
-        if (!description) {
-          item.classList.add("no-description");
-        }
-
-        item.addEventListener("click", () => {
-          playVideo(
-            video.videoId,
-            video.title,
-            item,
-            video.startTime
-          );
-        });
-
-        videoList.appendChild(item);
-      });
+    function isDirectVideoFile(url) {
+      return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
     }
 
-    function playVideo(
-      videoId,
-      title,
-      selectedItem,
-      startTime = 0
-    ) {
-      if (!autoplayEnabled) {
-        return;
-      }
-
-      document
-        .querySelectorAll(".video-item")
-        .forEach((item) => {
-          item.classList.remove("playing");
-        });
+    function playYouTubeVideo(video, selectedItem, youtubeInfo) {
+      document.querySelectorAll(".video-item").forEach((item) => {
+        item.classList.remove("playing");
+      });
 
       selectedItem.classList.add("playing");
-
       playerBox.innerHTML = "";
 
       const iframe = document.createElement("iframe");
 
-      let youtubeUrl =
+      let embedUrl =
         "https://www.youtube.com/embed/" +
-        encodeURIComponent(videoId) +
+        encodeURIComponent(youtubeInfo.videoId) +
         "?autoplay=1&rel=0&playsinline=1";
 
-      if (Number.isFinite(startTime) && startTime > 0) {
-        youtubeUrl += "&start=" + Math.floor(startTime);
+      if (youtubeInfo.startTime > 0) {
+        embedUrl += "&start=" + Math.floor(youtubeInfo.startTime);
       }
 
-      iframe.src = youtubeUrl;
-
-      iframe.title = title || "Video player";
-
+      iframe.src = embedUrl;
+      iframe.title = video.title || "Video player";
       iframe.allow =
         "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-
       iframe.allowFullscreen = true;
 
       playerBox.appendChild(iframe);
       playerBox.classList.add("active");
 
       nowPlaying.textContent =
-        "▶ NOW PLAYING: " +
-        (title || "Untitled video");
+        "▶ NOW PLAYING: " + (video.title || "Untitled video");
 
       nowPlaying.classList.add("visible");
 
-      requestVideoFullscreen();
+      requestPlayerFullscreen();
     }
 
-    async function requestVideoFullscreen() {
+    function playDirectVideo(video, selectedItem) {
+      document.querySelectorAll(".video-item").forEach((item) => {
+        item.classList.remove("playing");
+      });
+
+      selectedItem.classList.add("playing");
+      playerBox.innerHTML = "";
+
+      const videoElement = document.createElement("video");
+
+      videoElement.src = video.url;
+      videoElement.controls = true;
+      videoElement.autoplay = true;
+      videoElement.playsInline = true;
+
+      playerBox.appendChild(videoElement);
+      playerBox.classList.add("active");
+
+      nowPlaying.textContent =
+        "▶ NOW PLAYING: " + (video.title || "Untitled video");
+
+      nowPlaying.classList.add("visible");
+
+      requestPlayerFullscreen();
+    }
+
+    function playVideo(video, selectedItem) {
+      if (!autoplayEnabled) {
+        return;
+      }
+
+      const youtubeInfo = getYouTubeVideoInfo(video.url);
+
+      if (youtubeInfo) {
+        playYouTubeVideo(video, selectedItem, youtubeInfo);
+        return;
+      }
+
+      if (isDirectVideoFile(video.url)) {
+        playDirectVideo(video, selectedItem);
+        return;
+      }
+
+      /*
+        A normal external website cannot always be embedded.
+        Therefore, non-YouTube links are opened safely in a new tab.
+      */
+      window.open(video.url, "_blank", "noopener,noreferrer");
+    }
+
+    function renderVideos() {
+      videoList.innerHTML = "";
+
+      const searchTerm = searchInput.value.trim().toLowerCase();
+
+      const filteredVideos = videos.filter((video) => {
+        const searchableText = [
+          video.title || "",
+          video.description || "",
+          video.tags || "",
+          video.url || ""
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return (
+          searchTerm === "" ||
+          searchableText.includes(searchTerm)
+        );
+      });
+
+      if (filteredVideos.length === 0) {
+        videoList.innerHTML = `
+          <div class="empty-message">
+            No videos match your search.
+          </div>
+        `;
+        return;
+      }
+
+      filteredVideos.forEach((video) => {
+        const item = document.createElement("button");
+
+        item.type = "button";
+        item.className = "video-item";
+
+        const info = document.createElement("div");
+        info.className = "video-info";
+
+        const title = document.createElement("h3");
+        title.className = "video-title";
+        title.textContent = video.title || "Untitled video";
+
+        const description = document.createElement("p");
+        description.className = "video-description";
+        description.textContent = video.description || "";
+
+        info.appendChild(title);
+        info.appendChild(description);
+
+        const icon = document.createElement("span");
+        icon.className = "open-icon";
+        icon.setAttribute("aria-hidden", "true");
+
+        if (getYouTubeVideoInfo(video.url)) {
+          icon.textContent = "▶";
+        } else if (isDirectVideoFile(video.url)) {
+          icon.textContent = "▶";
+        } else {
+          icon.textContent = "↗";
+        }
+
+        item.appendChild(info);
+        item.appendChild(icon);
+
+        if (!video.description || video.description.trim() === "") {
+          item.classList.add("no-description");
+        }
+
+        item.addEventListener("click", () => {
+          playVideo(video, item);
+        });
+
+        videoList.appendChild(item);
+      });
+    }
+
+    async function requestPlayerFullscreen() {
       const requestFullscreen =
         playerBox.requestFullscreen ||
         playerBox.webkitRequestFullscreen ||
@@ -789,32 +733,29 @@
 
       try {
         await requestFullscreen.call(playerBox);
-
-        if (
-          screen.orientation &&
-          typeof screen.orientation.lock === "function"
-        ) {
-          try {
-            await screen.orientation.lock("landscape");
-          } catch {
-            console.log(
-              "Landscape orientation is not supported by this browser."
-            );
-          }
-        }
       } catch {
-        console.log(
-          "Video fullscreen was not allowed by this browser."
-        );
+        // Fullscreen can be blocked by some browsers.
       }
     }
 
-    async function enterWebsiteFullscreen() {
+    async function toggleWebsiteFullscreen() {
       const fullscreenElement =
-        getFullscreenElement();
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
 
       if (fullscreenElement) {
-        await exitFullscreen();
+        const exitFullscreen =
+          document.exitFullscreen ||
+          document.webkitExitFullscreen ||
+          document.mozCancelFullScreen ||
+          document.msExitFullscreen;
+
+        if (exitFullscreen) {
+          await exitFullscreen.call(document);
+        }
+
         return;
       }
 
@@ -825,65 +766,28 @@
         websitePage.msRequestFullscreen;
 
       if (!requestFullscreen) {
-        alert(
-          "Fullscreen mode is not supported by this browser."
-        );
-
+        alert("Fullscreen mode is not supported by this browser.");
         return;
       }
 
       try {
         await requestFullscreen.call(websitePage);
       } catch {
-        console.log(
-          "Website fullscreen was not allowed by this browser."
-        );
+        console.log("Fullscreen was not allowed by the browser.");
       }
-    }
-
-    async function exitFullscreen() {
-      const exit =
-        document.exitFullscreen ||
-        document.webkitExitFullscreen ||
-        document.mozCancelFullScreen ||
-        document.msExitFullscreen;
-
-      if (exit) {
-        await exit.call(document);
-      }
-    }
-
-    function getFullscreenElement() {
-      return (
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement
-      );
     }
 
     function handleFullscreenChange() {
-      const isFullscreen =
-        Boolean(getFullscreenElement());
+      const fullscreenElement =
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
 
       fullscreenBar.classList.toggle(
         "hidden",
-        isFullscreen
+        Boolean(fullscreenElement)
       );
-
-      if (
-        !isFullscreen &&
-        screen.orientation &&
-        typeof screen.orientation.unlock === "function"
-      ) {
-        try {
-          screen.orientation.unlock();
-        } catch {
-          console.log(
-            "Orientation unlock is not supported."
-          );
-        }
-      }
     }
 
     enterButton.addEventListener("click", () => {
@@ -893,13 +797,10 @@
 
     fullscreenBar.addEventListener(
       "click",
-      enterWebsiteFullscreen
+      toggleWebsiteFullscreen
     );
 
-    searchInput.addEventListener(
-      "input",
-      renderVideos
-    );
+    searchInput.addEventListener("input", renderVideos);
 
     [
       "fullscreenchange",
